@@ -10,7 +10,10 @@ int main(int argc, char* argv[])
 {    
     int serv_sock;
     int clnt_sock;
-   
+    int portNum;
+
+    scanf("%d", &portNum);
+
     //sockaddr_in은 소켓 주소의 틀을 형셩해주는 구조체로 AF_INET일 경우 사용
     struct sockaddr_in serv_addr;
     struct sockaddr_in clnt_addr; //accept함수에서 사용됨.
@@ -25,8 +28,9 @@ int main(int argc, char* argv[])
     memset(&serv_addr, 0, sizeof(serv_addr)); 
     serv_addr.sin_family=AF_INET;                //타입: ipv4
     serv_addr.sin_addr.s_addr=htonl(INADDR_ANY); //ip주소
-    serv_addr.sin_port=htons(atoi(argv[1]));     //port
-    //serv_addr.sin_port=htons(3530);     //port
+    //serv_addr.sin_port=htons(atoi(argv[1]));     //port
+    //serv_addr.sin_port=htons(3531);     //port
+    serv_addr.sin_port=htons(portNum);     //port
     
     //소켓과 서버 주소를 바인딩
     if(bind(serv_sock, (struct sockaddr*) &serv_addr, sizeof(serv_addr))==-1)

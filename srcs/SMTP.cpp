@@ -217,7 +217,7 @@ bool SMTP::AuthLogin() {
 
 	SSL_read(ssl, recvBuffer, sizeof(recvBuffer));
 	report << recvBuffer << "\r\n";
-	sprintf(sendBuffer, "&s\r\n", authID.c_str());
+	sprintf(sendBuffer, "%s\r\n", authID.c_str());
 	report << sendBuffer << "\r\n";
 	SSL_write(ssl, sendBuffer, (int)strlen(sendBuffer));
 	SSL_read(ssl, recvBuffer, sizeof(recvBuffer));

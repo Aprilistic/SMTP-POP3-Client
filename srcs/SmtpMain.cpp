@@ -1,6 +1,6 @@
 #include <string>
 #include "SMTPClient.h"
-
+/*
 int main(int argc, char const* argv[]) {
 	try {
 		Mawi1e::MySMTPClient smtpServer;
@@ -26,4 +26,4 @@ int main(int argc, char const* argv[]) {
 	catch (const std::exception& e) {
 		//MessageBoxA(0, e.what(), "", MB_OK);
 	}
-}
+}*/

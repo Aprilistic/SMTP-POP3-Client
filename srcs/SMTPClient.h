@@ -7,16 +7,14 @@
 
 #include <arpa/inet.h> 
 #include <stdio.h> 
-#include <string.h> 
-#include <sys/socket.h> 
-#include <unistd.h> 
-#include <netdb.h>
+#include <string.h>
 
 
-namespace Mawi1e {
-	class MySMTPClient {
+
+namespace TMP {
+	class SMTP {
 	public:
-		MySMTPClient();
+		SMTP();
 
 		void SetServerPort(const int);
 		void SetSMTPServer(const std::string&);

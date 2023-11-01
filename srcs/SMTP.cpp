@@ -16,12 +16,9 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
-#include "Email.h" 
-//#include "base64.hpp" 
+#include "Email.h" // 이메일 정보를 저장하는 클래스 헤더 파일
 
 //g++ SMTP.cpp -lssl -lcrypto
-
-
 
 class SMTP {
 private:
@@ -60,29 +57,27 @@ public:
 
 
 
+SMTP::SMTP() { }	//생성자
 
-SMTP::SMTP() { }
+
+
 void SMTP::SMTPCycle(Email email) {
-	/** --------------------------------------------------------------------------------
-	[                                  smtp 패킷전송                                   ]
-	-------------------------------------------------------------------------------- **/
+    // SMTP 클라이언트 주요 동작 함수
 
 
 
-	/** --------------------------------------------------------------------------------
-	[                                   패킷내용기록                                   ]
-	-------------------------------------------------------------------------------- **/
+	//.txt 파일에 패킷 통신 내용 기록	
 	report.open("SMTP.txt");
 	if (report.fail()) { printf("\nSMTP.txt failed.\n"); }
 	if (!report.is_open()) { printf("\nSMTP.txt can not open the file.\n"); }
-		
-	ConnectSMTP();
-	StartTlsSMTP();
-	AuthLogin();
 
-	SendMail(email);
+	ConnectSMTP();	//서버 연결
+	StartTlsSMTP();	//TLS 보안 연결
+	AuthLogin();	//이메일 아이디, 비밀번호 인증
 
-	CloseSMTP();
+	SendMail(email);	//이메일 전송
+
+	CloseSMTP();	//연결 종료
 
 	report.close();
 }
@@ -90,34 +85,39 @@ void SMTP::SMTPCycle(Email email) {
 
 
 bool SMTP::ConnectSMTP() {
-	/** --------------------------------------------------------------------------------
-	[                                    서버 접속                                     ]
-	-------------------------------------------------------------------------------- **/
-    		
+	// SMTP 서버에 연결
+
 	hostent* host;
+	//스트림 방식(TCP)의 소켓을 생성
 	if ((client_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) { 
-		printf("\nSocket Failed \n");
-		//throw std::runtime_error("socket");
+		throw std::runtime_error("Socket Failed");
 	}
+	//AF_INET은 인터넷 프로토콜을 의미
+	//client_fd는 왜 int형인가?	-client_fd는 소켓 그 자체를 담는 변수가 아닌 파일 디스크립터로, 소켓의 연결을 나타내고 관리하는 변수이기 때문
 
-
+	//serv_addr 초기화
 	memset(&serv_addr, 0x00, sizeof(serv_addr));
 
+
+	//주어진 호스트명(smtpServerAddress)에 대한 호스트 정보를 검색
+	//해당 호스트의 IP 주소 및 기타 네트워크 관련 정보를 반환
 	host = gethostbyname(smtpServerAddress.c_str());
 	if (host == NULL)
 	{
-		printf("\ngethostbyname\n");
+		throw std::runtime_error("Host Not Found");
 	}
-			
-	memcpy(&(serv_addr.sin_addr), host->h_addr, host->h_length);
-	serv_addr.sin_family = host->h_addrtype;
-	serv_addr.sin_port = htons(smtpPort);
+	
+	memcpy(&(serv_addr.sin_addr), host->h_addr, host->h_length);	//IP 주소 복사
+	serv_addr.sin_family = host->h_addrtype;	//IPv4, IPv6 등 버전 지정
+	serv_addr.sin_port = htons(smtpPort);	//포트번호를 빅 엔디안으로 인코딩하여 저장
 
 
+	//클라이언트 소켓 - 해당 SMTP 서버의 주소 및 포트와 연결 시도
 	if ((status = connect(client_fd, (struct sockaddr*)&serv_addr, sizeof(serv_addr))) < 0) { 
-		printf("\nConnection Failed \n");
+		throw std::runtime_error("Connection Failed");
 	} 
 
+	//서버로부터 응답 수신
 	recvBytes = recv(client_fd, recvBuffer, sizeof(recvBuffer), 0);
 	recvBuffer[recvBytes] = '\0';
 	report << recvBuffer;
@@ -126,7 +126,7 @@ bool SMTP::ConnectSMTP() {
 }
 
 bool SMTP::StartTlsSMTP(){
-		
+	// TLS 연결 설정 및 SSL 핸드셰이크 수행
 	/** --------------------------------------------------------------------------------
 	[                                      ehlo                                        ]
 	-------------------------------------------------------------------------------- **/
@@ -199,6 +199,7 @@ bool SMTP::StartTlsSMTP(){
 }
 
 bool SMTP::AuthLogin() {
+	// SMTP 서버에 인증
 	/** --------------------------------------------------------------------------------
 	[                                      ehlo                                        ]
 	-------------------------------------------------------------------------------- **/
@@ -227,6 +228,7 @@ bool SMTP::AuthLogin() {
 }
 
 void SMTP::CloseSMTP() {
+	// SMTP 연결 및 소켓 통신 종료
 	SSL_shutdown(ssl);
 	SSL_free(ssl);
 	SSL_CTX_free(ctx);

@@ -10,11 +10,11 @@ ifeq ($(UNAME_S),Darwin)
     LDFLAGS += -L$(OPENSSL_DIR)/lib
 endif
 
-INCLUDES = -I ./includes \
-            -I ./includes/core
+INCLUDES = -I ./includes 
 OBJ_DIR = objs
 
 SRCS := $(wildcard srcs/core/*.cpp) \
+        $(wildcard srcs/POP3/*.cpp) \
         $(wildcard srcs/*.cpp)
         
 SRCS_DIR := $(dir $(SRCS))

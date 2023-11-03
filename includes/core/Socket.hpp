@@ -1,7 +1,7 @@
 #ifndef SOCKET_HPP
 #define SOCKET_HPP
 
-#include "core/error.hpp"
+#include "core/Error.hpp"
 
 #include <openssl/err.h>
 #include <openssl/ssl.h>
@@ -11,6 +11,7 @@ class Socket {
   int socketFD;
   std::string address;
   std::string port;
+  bool useTLS;
 
   SSL *ssl;
   SSL_CTX *ctx;

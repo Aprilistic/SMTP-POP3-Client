@@ -1,6 +1,6 @@
-#include "core/socket.hpp"
-#include "core/config.hpp"
-#include "core/error.hpp"
+#include "core/Socket.hpp"
+#include "core/Config.hpp"
+#include "core/Error.hpp"
 
 #include <iostream>
 #include <netdb.h>
@@ -13,19 +13,19 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#ifdef USE_TLS
 #include <openssl/err.h>
 #include <openssl/ssl.h>
-#endif
 
 Socket::Socket(const std::string &inputAddress, const std::string &inputPort,
-               bool useTLS)
-    : address(inputAddress), port(inputPort), socketFD(-1) {
-#ifdef USE_TLS
+               bool useTLS){
+    // : address(inputAddress), port(inputPort), socketFD(-1) {
+address = inputAddress;
+port = inputPort;
+socketFD = -1;
+this->useTLS = useTLS;
   if (useTLS) {
     initTLS();
   }
-#endif
   open();
 }
 
@@ -34,11 +34,9 @@ Socket::Socket(const std::string &inputAddress, int inputPort, bool useTLS)
   std::stringstream portInString;
   portInString << inputPort;
   port = portInString.str();
-#ifdef USE_TLS
   if (useTLS) {
     initTLS();
   }
-#endif
   open();
 }
 
@@ -80,17 +78,13 @@ void Socket::open() {
     throw ConnectionError("Cannot establish connection to the server");
   }
 
-#ifdef USE_TLS
   if (useTLS) {
     completeTLSHandshake();
   }
-#endif
 }
 
 Socket::~Socket() {
-#ifdef USE_TLS
   cleanupTLS();
-#endif
   if (socketFD > 0) {
     close();
   }
@@ -109,15 +103,11 @@ size_t Socket::read(char *buffer, size_t size) {
   }
 
   ssize_t bytesRead;
-#ifdef USE_TLS
   if (useTLS) {
     bytesRead = SSL_read(ssl, buffer, size);
   } else {
-#endif
     bytesRead = ::read(socketFD, buffer, size);
-#ifdef USE_TLS
   }
-#endif
 
   if (bytesRead < 0) {
     throw IOError("Receiving error", "Unable to read data from remote host");
@@ -128,15 +118,11 @@ size_t Socket::read(char *buffer, size_t size) {
 
 void Socket::write(const std::string request) {
   ssize_t bytesWritten;
-#ifdef USE_TLS
   if (useTLS) {
     bytesWritten = SSL_write(ssl, request.c_str(), request.length());
   } else {
-#endif
     bytesWritten = ::write(socketFD, request.c_str(), request.length());
-#ifdef USE_TLS
   }
-#endif
 
   if (bytesWritten < 0) {
     throw IOError("Sending error", "Unable to send data to remote host");
@@ -160,7 +146,48 @@ bool Socket::isReadyToRead() {
   return selectReturnValue > 0;
 }
 
-#ifdef USE_TLS
+void Socket::readAll(std::string *response)
+{
+    char buffer;
+
+    while (readCharacter(&buffer))
+    {
+        *response += buffer;
+    }
+}
+
+bool Socket::readCharacter(char* buffer)
+{
+    if (read(buffer, 1) > 0)
+    {
+        return true;
+    }
+    return false;
+}
+
+size_t Socket::readLine(std::string* line)
+{
+    char buffer[2] = "";
+    *line = "";
+    size_t bytesRead = 0;
+
+    if (readCharacter(&(buffer[1])))
+    {
+        do
+        {
+            *line     += buffer[0]; // add char to string
+            buffer[0]  = buffer[1];
+            bytesRead++;
+        }
+        while (readCharacter(&(buffer[1])) &&
+               !(buffer[0] == '\r' && buffer[1] == '\n'));
+     
+        line->erase(0, 1);
+    }
+
+    return bytesRead;
+}
+
 void Socket::initTLS() {
   SSL_library_init();
   OpenSSL_add_all_algorithms();
@@ -205,4 +232,3 @@ void Socket::cleanupTLS() {
     ctx = nullptr;
   }
 }
-#endif

@@ -12,8 +12,8 @@ private:
 	std::string m_body;
 
 public:
-	Email();
-	Email(const std::string &rawEmail);
+	// Email();
+	// Email(const std::string &rawEmail);
 
 	void SetDate(std::string& date) { m_date = date; }
 	void SetSendTo(std::string& sendTo) { m_sendTo = sendTo; }

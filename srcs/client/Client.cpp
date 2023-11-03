@@ -35,6 +35,30 @@ bool Client::Login()
 void Client::Logout()
     {
     }
+Email Client::EmailInput(){
+    std::string date, sendTo, recvFrom, title, body, line;
+
+    std::cout << "받는 사람의 이메일 주소를 입력하세요: ";
+    std::getline(std::cin, sendTo);
+    std::cout << "제목을 입력하세요: ";
+    std::getline(std::cin, title);
+    std::cout << "본문을 입력하세요 (입력을 완료하려면 '.'을 입력하세요): ";
+    
+    while (std::getline(std::cin, line)) {
+        body += line + "\r\n";
+        if (line == ".") {
+            break;
+        }
+    }
+
+    Email email;
+    email.SetSendTo(sendTo);
+    email.SetRecvFrom(ID);
+    email.SetTitle(title);
+    email.SetBody(body);
+
+    return email;
+}
 
 void Client::ShowOptions()
     {
@@ -56,14 +80,14 @@ void Client::ShowOptions()
         }
         int option;
         std::cin >> option;
-
+    
         switch (option)
         {
         case 1:
             // 이메일 발송
             {
                 Email email;
-                // email 객체 초기화
+                email = Emailnput();
                 smtp.SendMail(email);
                 break;
             }
@@ -77,6 +101,7 @@ void Client::ShowOptions()
             // 특정 이메일 개별 접근 (인덱스 번호 입력)
             {
                 int id;
+                std::cout << "이메일 인덱스 번호 입력 : ";
                 std::cin >> id;
                 std::string raw_email = pop3.printMessage(id);
                 EmailParser parser(raw_email);
@@ -88,6 +113,7 @@ void Client::ShowOptions()
             // 이메일 전달
             {
                 int id;
+                std::cout << "전달할 이메일 id 입력 : ";
                 std::string sendTo;
                 std::cin >> id >> sendTo;
                 mailbox.ForwardMail(id, sendTo);
@@ -98,6 +124,7 @@ void Client::ShowOptions()
             {
                 int id;
                 std::string body;
+                std::cout << "답장할 이메일 id 입력 : ";
                 std::cin >> id;
                 std::getline(std::cin, body);
                 mailbox.ReplyMail(id, body);
@@ -107,6 +134,7 @@ void Client::ShowOptions()
             // 이메일 삭제
             {
                 int id;
+                std::cout << "삭제할 이메일 id 입력 : ";
                 std::cin >> id;
                 mailbox.DeleteMail(id);
                 break;

@@ -1,5 +1,5 @@
-#include "core/error.hpp"
-#include "core/config.hpp"
+#include "core/Error.hpp"
+#include "core/Config.hpp"
 
 #include <stdexcept>
 #include <string>

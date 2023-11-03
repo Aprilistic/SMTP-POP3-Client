@@ -1,21 +1,21 @@
-#include "pop3/pop3session.hpp"
-#include "core/socket.hpp"
+#include "pop3/POP3.hpp"
+#include "core/Socket.hpp"
 
 #include <iostream>
 #include <sstream>
 #include <string>
 
-Pop3Session::Pop3Session(std::string const &server, int port, bool useTLS) {
+POP3::POP3(std::string const &server, int port, bool useTLS) {
   open(server, port, useTLS);
 }
 
-Pop3Session::~Pop3Session() { close(); }
+POP3::~POP3() { close(); }
 
-void Pop3Session::sendCommand(std::string const &command) {
+void POP3::sendCommand(std::string const &command) {
   socket->write(command + "\r\n");
 }
 
-void Pop3Session::getResponse(ServerResponse *response) {
+void POP3::getResponse(ServerResponse *response) {
   std::string buffer;
   socket->readLine(&buffer);
 
@@ -31,7 +31,7 @@ void Pop3Session::getResponse(ServerResponse *response) {
   response->data.clear();
 }
 
-void Pop3Session::getMultilineData(ServerResponse *response) {
+void POP3::getMultilineData(ServerResponse *response) {
   std::string buffer;
   int bytesRead;
 
@@ -53,7 +53,7 @@ void Pop3Session::getMultilineData(ServerResponse *response) {
   }
 }
 
-void Pop3Session::open(std::string const &server, int port, bool useTLS) {
+void POP3::open(std::string const &server, int port, bool useTLS) {
   socket = std::make_unique<Socket>(server, port, useTLS);
 
   ServerResponse welcomeMessage;
@@ -65,13 +65,13 @@ void Pop3Session::open(std::string const &server, int port, bool useTLS) {
   }
 }
 
-void Pop3Session::close() {
+void POP3::close() {
   if (socket != NULL) {
     sendCommand("QUIT");
   }
 }
 
-void Pop3Session::authenticate(std::string const &username,
+void POP3::authenticate(std::string const &username,
                                std::string const &password) {
   ServerResponse response;
 
@@ -91,7 +91,7 @@ void Pop3Session::authenticate(std::string const &username,
   }
 }
 
-void Pop3Session::printMessageList() {
+void POP3::printMessageList() {
   ServerResponse response;
 
   sendCommand("LIST");
@@ -116,7 +116,7 @@ void Pop3Session::printMessageList() {
   }
 }
 
-void Pop3Session::printMessage(int messageId) {
+void POP3::printMessage(int messageId) {
   ServerResponse response;
 
   std::stringstream command;
@@ -136,4 +136,8 @@ void Pop3Session::printMessage(int messageId) {
        line != response.data.end(); line++) {
     std::cout << *line << std::endl;
   }
+}
+
+Email POP3::DownloadMail(int messageID){
+  
 }

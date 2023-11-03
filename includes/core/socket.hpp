@@ -8,7 +8,7 @@
 #include <string>
 
 class Socket {
-  int socketFileDescriptor;
+  int socketFD;
   std::string address;
   std::string port;
 
@@ -16,7 +16,7 @@ class Socket {
   SSL_CTX *ctx;
 
 public:
-	// Constructors and Destructor
+  // Constructors and Destructor
   Socket(std::string const &inputAddress, int inputPort, bool useTLS = false);
   Socket(std::string const &inputAddress, std::string const &inputPort,
          bool useTLS = false);
@@ -28,7 +28,7 @@ public:
   void readAll(std::string *response);
   size_t readLine(std::string *line);
 
-	// Exceptions
+  // Exceptions
   class ConnectionError;
   class IOError;
 
@@ -37,8 +37,8 @@ private:
   void close();
   bool readCharacter(char *buffer);
   bool isReadyToRead();
-	void initTLS();
-	void cleanupTLS();
+  void initTLS();
+  void cleanupTLS();
 };
 
 class Socket::ConnectionError : public Error {

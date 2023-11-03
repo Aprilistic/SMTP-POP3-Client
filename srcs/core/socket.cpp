@@ -18,8 +18,8 @@
 
 Socket::Socket(std::string const &inputAddress, std::string const &inputPort,
                bool useTLS)
-    : address(inputAddress), port(inputPort), socketFileDescriptor(-1),
-      ssl(nullptr), ctx(nullptr), useTLS(useTLS) {
+    : address(inputAddress), port(inputPort), socketFD(-1), ssl(nullptr),
+      ctx(nullptr) {
   open();
   if (useTLS) {
     initTLS();
@@ -27,8 +27,7 @@ Socket::Socket(std::string const &inputAddress, std::string const &inputPort,
 }
 
 Socket::Socket(std::string const &inputAddress, int inputPort, bool useTLS)
-    : address(inputAddress), socketFileDescriptor(-1), ssl(nullptr),
-      ctx(nullptr), useTLS(useTLS) {
+    : address(inputAddress), socketFD(-1), ssl(nullptr), ctx(nullptr) {
   std::stringstream portInString;
   portInString << inputPort;
   port = portInString.str();
@@ -57,19 +56,18 @@ void Socket::open() {
 
   for (resultPointer = result; resultPointer != NULL;
        resultPointer = resultPointer->ai_next) {
-    socketFileDescriptor =
-        socket(resultPointer->ai_family, resultPointer->ai_socktype,
-               resultPointer->ai_protocol);
-    if (socketFileDescriptor == -1) {
+    socketFD = socket(resultPointer->ai_family, resultPointer->ai_socktype,
+                      resultPointer->ai_protocol);
+    if (socketFD == -1) {
       continue;
     }
 
-    if (connect(socketFileDescriptor, resultPointer->ai_addr,
-                resultPointer->ai_addrlen) != -1) {
+    if (connect(socketFD, resultPointer->ai_addr, resultPointer->ai_addrlen) !=
+        -1) {
       break;
     }
 
-    ::close(socketFileDescriptor);
+    ::close(socketFD);
   }
 
   if (resultPointer == NULL) {
@@ -80,14 +78,14 @@ void Socket::open() {
 }
 
 Socket::~Socket() {
-  if (socketFileDescriptor > 0) {
+  if (socketFD > 0) {
     close();
   }
 }
 
 void Socket::close() {
-  ::shutdown(socketFileDescriptor, SHUT_RDWR);
-  ::close(socketFileDescriptor);
+  ::shutdown(socketFD, SHUT_RDWR);
+  ::close(socketFD);
 }
 
 size_t Socket::read(char *buffer, size_t size) {
@@ -96,7 +94,7 @@ size_t Socket::read(char *buffer, size_t size) {
                   "Server not responding (connection timed out).");
   }
 
-  ssize_t bytesRead = ::read(socketFileDescriptor, buffer, size);
+  ssize_t bytesRead = ::read(socketFD, buffer, size);
   if (bytesRead < 0) {
     throw IOError("Recieving error", "Unable to resolve data from remote host");
   }
@@ -105,7 +103,7 @@ size_t Socket::read(char *buffer, size_t size) {
 }
 
 void Socket::write(std::string request) {
-  if (::write(socketFileDescriptor, request.c_str(), request.length()) < 0) {
+  if (::write(socketFD, request.c_str(), request.length()) < 0) {
     throw IOError("Sending error", "Unable to send data to remote host");
   }
 }
@@ -150,14 +148,13 @@ bool Socket::isReadyToRead() {
   int selectReturnValue;
 
   FD_ZERO(&recieveFd);
-  FD_SET(socketFileDescriptor, &recieveFd);
+  FD_SET(socketFD, &recieveFd);
 
   /* 30 seconds timeout */
   timeout.tv_sec = __SOCKET_READ_TIMEOUT;
   timeout.tv_usec = 0;
 
-  selectReturnValue =
-      select(socketFileDescriptor + 1, &recieveFd, NULL, NULL, &timeout);
+  selectReturnValue = select(socketFD + 1, &recieveFd, NULL, NULL, &timeout);
 
   if (selectReturnValue > 0) {
     return true;
@@ -185,7 +182,7 @@ void Socket::initTLS() {
     throw ConnectionError("Failed to create SSL structure");
   }
 
-  SSL_set_fd(ssl, socketFileDescriptor);
+  SSL_set_fd(ssl, socketFD);
   if (SSL_connect(ssl) <= 0) {
     ERR_print_errors_fp(stderr);
     SSL_free(ssl);
@@ -200,7 +197,7 @@ void Socket::cleanupTLS() {
     SSL_free(ssl);
     ssl = NULL;
   }
-	
+
   if (ctx) {
     SSL_CTX_free(ctx);
     ctx = NULL;

@@ -26,15 +26,6 @@ SMTP::SMTP() {} // 생성자
 
 void SMTP::SMTPCycle(Email email) {
   // SMTP 클라이언트 주요 동작 함수
-  
-  // .txt 파일에 패킷 통신 내용 기록
-  report.open("SMTP.txt");
-  if (report.fail()) {
-    printf("\nSMTP.txt failed.\n");
-  }
-  if (!report.is_open()) {
-    printf("\nSMTP.txt can not open the file.\n");
-  }
 
   ConnectSMTP();  // 서버 연결
   StartTlsSMTP(); // TLS 보안 연결
@@ -43,8 +34,6 @@ void SMTP::SMTPCycle(Email email) {
   SendMail(email); // 이메일 전송
 
   CloseSMTP(); // 연결 종료
-
-  report.close();
 }
 
 void SMTP::ConnectSMTP() {
@@ -84,7 +73,6 @@ void SMTP::ConnectSMTP() {
   // 220 smtp.naver.com ESMTP
   recvBytes = recv(client_fd, recvBuffer, sizeof(recvBuffer), 0);
   recvBuffer[recvBytes] = '\0';
-  report << recvBuffer;
 
   return;
 }
@@ -94,28 +82,23 @@ void SMTP::StartTlsSMTP() {
 
   // ehlo
   sprintf(sendBuffer, "ehlo %s\r\n", dnsAddress.c_str());
-  report << sendBuffer;
   send(client_fd, sendBuffer, (int)strlen(sendBuffer), 0);
 
   // 250-smtp.naver.com Pleased to meet you
   recvBytes = recv(client_fd, recvBuffer, sizeof(recvBuffer), 0);
   recvBuffer[recvBytes] = '\0';
-  report << recvBuffer;
 
   // STARTTLS 명령 전송
   sprintf(sendBuffer, "STARTTLS\r\n");
-  report << sendBuffer;
   send(client_fd, sendBuffer, (int)strlen(sendBuffer), 0);
 
   // 응답 읽기
   // 220 2.0.0 Ready to start TLS
   recvBytes = recv(client_fd, recvBuffer, sizeof(recvBuffer), 0);
   recvBuffer[recvBytes] = '\0';
-  report << recvBuffer;
 
   if (strstr(recvBuffer, "220") == NULL) {
     close(client_fd);
-    report.close();
     throw std::runtime_error("'STARTTLS not supported'");
   }
 
@@ -148,7 +131,6 @@ void SMTP::StartTlsSMTP() {
     // SSL 핸드셰이크 실패 처리
     SSL_free(ssl);
     close(client_fd);
-    report.close();
     throw std::runtime_error("'SSL handshake failed'");
   }
 }
@@ -158,41 +140,33 @@ void SMTP::AuthLogin() {
 
   // ehlo
   sprintf(sendBuffer, "ehlo %s\r\n", dnsAddress.c_str());
-  report << sendBuffer << "\r\n";
   SSL_write(ssl, sendBuffer, (int)strlen(sendBuffer));
 
   // 250-smtp.naver.com Pleased to meet you
   memset(recvBuffer, 0, sizeof(recvBuffer));
   SSL_read(ssl, recvBuffer, sizeof(recvBuffer));
-  report << recvBuffer << "\r\n";
 
   // auth 로그인
   sprintf(sendBuffer, "AUTH PLAIN:\r\n");
-  report << sendBuffer << "\r\n";
   SSL_write(ssl, sendBuffer, (int)strlen(sendBuffer));
 
   // 334
   memset(recvBuffer, 0, sizeof(recvBuffer));
   SSL_read(ssl, recvBuffer, sizeof(recvBuffer));
-  report << recvBuffer << "\r\n";
   if (strstr(recvBuffer, "334") == NULL) {
     close(client_fd);
-    report.close();
     throw std::runtime_error("'AuthPlain not supported'");
   }
 
   // 이메일 계정, 비밀번호를 base64 인코딩하여 전송
   sprintf(sendBuffer, "%s\r\n", authID.c_str());
-  report << sendBuffer << "\r\n";
   SSL_write(ssl, sendBuffer, (int)strlen(sendBuffer));
 
   // 235 2.7.0 Accepted
   memset(recvBuffer, 0, sizeof(recvBuffer));
   SSL_read(ssl, recvBuffer, sizeof(recvBuffer));
-  report << recvBuffer << "\r\n";
   if (strstr(recvBuffer, "235") == NULL) {
     close(client_fd);
-    report.close();
     throw std::runtime_error("'Wrong ID or password'");
   }
   return;
@@ -212,69 +186,56 @@ void SMTP::SendMail(Email email) {
 
   // MAIL FROM:<전송자 이메일>
   sprintf(sendBuffer, "MAIL FROM:<%s>\r\n", email.GetRecvFrom().c_str());
-  report << sendBuffer << "\r\n";
   SSL_write(ssl, sendBuffer, (int)strlen(sendBuffer));
 
   // 250 2.1.0 OK
   memset(recvBuffer, 0, sizeof(recvBuffer));
   SSL_read(ssl, recvBuffer, sizeof(recvBuffer));
-  report << recvBuffer << "\r\n";
   if (strstr(recvBuffer, "250") == NULL) {
     close(client_fd);
-    report.close();
     throw std::runtime_error("'Wrong Mail Sender Address'");
   }
 
   // RCPT TO:<수신자 이메일>
   sprintf(sendBuffer, "RCPT TO:<%s>\r\n", email.GetSendTo().c_str());
-  report << sendBuffer << "\r\n";
   SSL_write(ssl, sendBuffer, (int)strlen(sendBuffer));
 
   // 250 2.1.5 OK
   memset(recvBuffer, 0, sizeof(recvBuffer));
   SSL_read(ssl, recvBuffer, sizeof(recvBuffer));
-  report << recvBuffer << "\r\n";
   if (strstr(recvBuffer, "250") == NULL) {
     close(client_fd);
-    report.close();
     throw std::runtime_error("'Wrong Mail Receiver Address'");
   }
 
   // DATA
   sprintf(sendBuffer, "DATA\r\n");
-  report << sendBuffer << "\r\n";
   SSL_write(ssl, sendBuffer, (int)strlen(sendBuffer));
 
   // 354 Go ahead
   memset(recvBuffer, 0, sizeof(recvBuffer));
   SSL_read(ssl, recvBuffer, sizeof(recvBuffer));
-  report << recvBuffer << "\r\n";
 
   // 메일 본문 (To, From, Subject, Body)
   sprintf(sendBuffer, "To:%s\nFrom:%s\nSubject:%s\r\n\r\n%s\r\n.\r\n",
           email.GetSendTo().c_str(), email.GetRecvFrom().c_str(),
           email.GetTitle().c_str(), email.GetBody().c_str());
-  report << sendBuffer << "\r\n";
   SSL_write(ssl, sendBuffer, (int)strlen(sendBuffer));
 
   // 250 2.0.0 OK
   memset(recvBuffer, 0, sizeof(recvBuffer));
   SSL_read(ssl, recvBuffer, sizeof(recvBuffer));
-  report << recvBuffer << "\r\n";
   if (strstr(recvBuffer, "250") == NULL) {
     close(client_fd);
-    report.close();
     throw std::runtime_error("'Email delivery failure'");
   }
 
   // quit
   sprintf(sendBuffer, "quit\r\n");
-  report << sendBuffer << "\r\n";
   SSL_write(ssl, sendBuffer, (int)strlen(sendBuffer));
 
   memset(recvBuffer, 0, sizeof(recvBuffer));
   SSL_read(ssl, recvBuffer, sizeof(recvBuffer));
-  report << recvBuffer << "\r\n";
 
   return;
 }

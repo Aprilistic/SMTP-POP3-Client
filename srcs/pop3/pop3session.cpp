@@ -3,13 +3,12 @@
 
 #include <iostream>
 #include <sstream>
+#include <string>
 
-Pop3Session::Pop3Session() : socket(NULL) {}
-
-Pop3Session(std::string const &server, int port, bool useTLS = false)
-    : socket(nullptr) {
+Pop3Session::Pop3Session(std::string const &server, int port, bool useTLS) {
   open(server, port, useTLS);
 }
+
 Pop3Session::~Pop3Session() { close(); }
 
 void Pop3Session::sendCommand(std::string const &command) {

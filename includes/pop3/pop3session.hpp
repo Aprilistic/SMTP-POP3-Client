@@ -13,7 +13,6 @@ class Pop3Session {
   std::unique_ptr<Socket> socket;
 
 public:
-  Pop3Session();
   Pop3Session(std::string const &server, int port, bool useTLS = false);
   ~Pop3Session();
 

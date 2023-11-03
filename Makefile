@@ -14,7 +14,9 @@ INCLUDES = -I ./includes
 OBJ_DIR = objs
 
 SRCS := $(wildcard srcs/core/*.cpp) \
-        $(wildcard srcs/POP3/*.cpp) \
+        $(wildcard srcs/pop3/*.cpp) \
+        $(wildcard srcs/smtp/*.cpp) \
+        $(wildcard srcs/client/*.cpp) \
         $(wildcard srcs/*.cpp)
         
 SRCS_DIR := $(dir $(SRCS))

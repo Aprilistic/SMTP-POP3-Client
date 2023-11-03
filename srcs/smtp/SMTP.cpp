@@ -17,44 +17,11 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
-#include "Email.h" // 이메일 정보를 저장하는 클래스 헤더 파일
+#include "smtp/SMTP.hpp"
+
+#include "core/Email.hpp" // 이메일 정보를 저장하는 클래스 헤더 파일
 
 // g++ SMTP.cpp -lssl -lcrypto
-
-class SMTP {
-private:
-
-	// 클라이언트로부터 넘겨받을 것
-	const std::string authID = "AHNqdXRlc3RAbmF2ZXIuY29tAHNqdXRlc3RA";
-
-	const std::string dnsAddress = "naver.com";
-	const std::string smtpServerAddress = "smtp.naver.com";
-	const int smtpPort = 25;
-
-    struct sockaddr_in serv_addr; 
-    int status, valread, client_fd;
-	SSL_CTX *ctx;
-	SSL *ssl;
-
-	std::ofstream report;
-	char recvBuffer[0x200], sendBuffer[0x200];
-	int recvBytes;
-
-
-public:
-
-	SMTP();
-
-	void SMTPCycle(Email);
-
-    void ConnectSMTP();
-	void StartTlsSMTP();
-	void AuthLogin();
-
-	void SendMail(Email);
-
-	void CloseSMTP();
-};
 
 
 
@@ -62,7 +29,7 @@ SMTP::SMTP() { }	// 생성자
 
 
 
-void SMTP::SMTPCycle(Email email) {
+static void SMTP::SMTPCycle(Email email) {
     // SMTP 클라이언트 주요 동작 함수
 
 

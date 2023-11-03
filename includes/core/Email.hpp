@@ -1,5 +1,5 @@
-
-#pragma once
+#ifndef EMAIL_HPP
+#define EMAIL_HPP
 
 #include <string>
 
@@ -12,6 +12,9 @@ private:
 	std::string m_body;
 
 public:
+	Email();
+	Email(const std::string &rawEmail);
+
 	void SetDate(std::string& date) { m_date = date; }
 	void SetSendTo(std::string& sendTo) { m_sendTo = sendTo; }
 	void SetRecvFrom(std::string& recvFrom) {m_recvFrom = recvFrom; }
@@ -24,3 +27,6 @@ public:
 	std::string& GetTitle() { return m_title; }
 	std::string& GetBody() { return m_body; }
 };
+
+
+#endif

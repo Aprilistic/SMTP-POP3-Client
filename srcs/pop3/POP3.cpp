@@ -79,7 +79,7 @@ void Pop3Session::authenticate(std::string const &username,
   std::string credentials = "\0" + username + "\0" + password;
 
   // Base64 encode the credentials
-  std::string encodedCredentials = base64_encode(credentials);
+  // std::string encodedCredentials = base64_encode(credentials);
 
   // Send the AUTH PLAIN command with the encoded credentials
   sendCommand("AUTH PLAIN " + encodedCredentials);

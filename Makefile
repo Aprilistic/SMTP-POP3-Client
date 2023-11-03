@@ -1,6 +1,6 @@
 NAME = EmailClient
 CXX = g++
-CXXFLAGS = -Wall -Wextra -Werror -MMD
+CXXFLAGS = -Wall -Wextra -Werror -MMD -DUSE_TLS
 LDFLAGS = -lssl -lcrypto
 
 UNAME_S := $(shell uname -s)

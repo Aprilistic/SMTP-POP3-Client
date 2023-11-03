@@ -75,16 +75,17 @@ void Pop3Session::authenticate(std::string const &username,
                                std::string const &password) {
   ServerResponse response;
 
-  sendCommand("USER " + username);
+  // Format the credentials: \0username\0password
+  std::string credentials = "\0" + username + "\0" + password;
+
+  // Base64 encode the credentials
+  std::string encodedCredentials = base64_encode(credentials);
+
+  // Send the AUTH PLAIN command with the encoded credentials
+  sendCommand("AUTH PLAIN " + encodedCredentials);
   getResponse(&response);
 
-  if (!response.status) {
-    throw ServerError("Authentication failed", response.statusMessage);
-  }
-
-  sendCommand("PASS " + password);
-  getResponse(&response);
-
+  // Check the server's response
   if (!response.status) {
     throw ServerError("Authentication failed", response.statusMessage);
   }

@@ -4,8 +4,8 @@
 #include <list>
 #include <string>
 
-#include "core/error.hpp"
 #include "core/base64.hpp"
+#include "core/error.hpp"
 
 class Socket;
 
@@ -17,9 +17,7 @@ public:
   ~Pop3Session();
 
   void authenticate(std::string const &username, std::string const &password);
-
   void printMessageList();
-
   void printMessage(int messageId);
 
   /* Exceptions */
@@ -27,11 +25,8 @@ public:
 
 private:
   struct ServerResponse;
-
   void sendCommand(std::string const &command);
-
   void getResponse(ServerResponse *response);
-
   void getMultilineData(ServerResponse *response);
 
   void open(std::string const &server, int port, bool useTLS);
@@ -42,8 +37,7 @@ struct Pop3Session::ServerResponse {
 
   bool status; /*< It's true on +OK, false on -ERR */
   std::string statusMessage;
-  std::list<std::string>
-      data; /*< Multi-line data in case, they were present. */
+  std::list<std::string> data;
 };
 
 class Pop3Session::ServerError : public Error {

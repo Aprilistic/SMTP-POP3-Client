@@ -1,0 +1,57 @@
+220 smtp.naver.com ESMTP gCgZ9rX7RWu7UjFpdVyTgg - nsmtp
+ehlo naver.com
+250-smtp.naver.com Pleased to meet you
+250-SIZE 20971520
+250-8BITMIME
+250-PIPELINING
+250-STARTTLS
+250-AUTH PLAIN LOGIN
+250 ENHANCEDSTATUSCODES
+STARTTLS
+220 2.0.0 Ready to start TLS gCgZ9rX7RWu7UjFpdVyTgg - nsmtp
+ehlo naver.com
+
+250-smtp.naver.com Pleased to meet you
+250-SIZE 20971520
+250-8BITMIME
+250-PIPELINING
+250-AUTH PLAIN LOGIN
+250 ENHANCEDSTATUSCODES
+
+AUTH PLAIN:
+
+334
+
+AHNqdXRlc3RAbmF2ZXIuY29tAHNqdXRlc3RA
+
+235 2.7.0 Accepted gCgZ9rX7RWu7UjFpdVyTgg - nsmtp
+
+MAIL FROM:<sjutest@naver.com>
+
+250 2.1.0 OK gCgZ9rX7RWu7UjFpdVyTgg - nsmtp
+
+RCPT TO:<kjunwoo23@gmail.com>
+
+250 2.1.5 OK gCgZ9rX7RWu7UjFpdVyTgg - nsmtp
+
+DATA
+
+354 Go ahead gCgZ9rX7RWu7UjFpdVyTgg - nsmtp
+
+To:kjunwoo23@gmail.com
+From:sjutest@naver.com
+Subject:test is test
+
+one
+two
+three
+.
+
+.
+
+250 2.0.0 OK gCgZ9rX7RWu7UjFpdVyTgg - nsmtp
+
+quit
+
+502 5.5.1 Unrecognized command gCgZ9rX7RWu7UjFpdVyTgg - nsmtp
+

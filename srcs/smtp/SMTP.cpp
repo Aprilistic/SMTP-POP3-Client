@@ -278,7 +278,7 @@ void SMTP::SendMail(Email email) {
 
   return;
 }
-
+/*
 int main() {
   try {
     SMTP smtpServer;
@@ -302,4 +302,4 @@ int main() {
   } catch (const std::exception &e) {
     system(e.what());
   }
-}
+}*/

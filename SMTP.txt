@@ -1,4 +1,4 @@
-220 smtp.naver.com ESMTP pJIJ5UzWQ+WmnKTNbmMYlQ - nsmtp
+220 smtp.naver.com ESMTP O+ZoJcomQSuhtlnuiR2QFw - nsmtp
 ehlo naver.com
 250-smtp.naver.com Pleased to meet you
 250-SIZE 20971520
@@ -8,7 +8,7 @@ ehlo naver.com
 250-AUTH PLAIN LOGIN
 250 ENHANCEDSTATUSCODES
 STARTTLS
-220 2.0.0 Ready to start TLS pJIJ5UzWQ+WmnKTNbmMYlQ - nsmtp
+220 2.0.0 Ready to start TLS O+ZoJcomQSuhtlnuiR2QFw - nsmtp
 ehlo naver.com
 
 250-smtp.naver.com Pleased to meet you
@@ -24,34 +24,32 @@ AUTH PLAIN:
 
 AHNqdXRlc3RAbmF2ZXIuY29tAHNqdXRlc3RA
 
-235 2.7.0 Accepted pJIJ5UzWQ+WmnKTNbmMYlQ - nsmtp
+235 2.7.0 Accepted O+ZoJcomQSuhtlnuiR2QFw - nsmtp
 
 MAIL FROM:<sjutest@naver.com>
 
-250 2.1.0 OK pJIJ5UzWQ+WmnKTNbmMYlQ - nsmtp
+250 2.1.0 OK O+ZoJcomQSuhtlnuiR2QFw - nsmtp
 
-RCPT TO:<kjunwoo23@gmail.com>
+RCPT TO:<ujhdfa3d@dfdf.com>
 
-250 2.1.5 OK pJIJ5UzWQ+WmnKTNbmMYlQ - nsmtp
+250 2.1.5 OK O+ZoJcomQSuhtlnuiR2QFw - nsmtp
 
 DATA
 
-354 Go ahead pJIJ5UzWQ+WmnKTNbmMYlQ - nsmtp
+354 Go ahead O+ZoJcomQSuhtlnuiR2QFw - nsmtp
 
-To:kjunwoo23@gmail.com
+To:ujhdfa3d@dfdf.com
 From:sjutest@naver.com
-Subject:test is test
+Subject:d
 
-one
-two
-three
+d
 .
 
 .
 
-250 2.0.0 OK pJIJ5UzWQ+WmnKTNbmMYlQ - nsmtp
+250 2.0.0 OK O+ZoJcomQSuhtlnuiR2QFw - nsmtp
 
 quit
 
-502 5.5.1 Unrecognized command pJIJ5UzWQ+WmnKTNbmMYlQ - nsmtp
+502 5.5.1 Unrecognized command O+ZoJcomQSuhtlnuiR2QFw - nsmtp
 

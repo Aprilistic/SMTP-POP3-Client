@@ -35,7 +35,9 @@ void Client::Logout() {}
 Email Client::EmailInput() {
   std::string date, sendTo, recvFrom, title, body, line;
 
+  std::getchar(); // 버퍼를 비움
   std::cout << "받는 사람의 이메일 주소를 입력하세요: ";
+  // std::cin>>sendTo;
   std::getline(std::cin, sendTo);
   std::cout << "제목을 입력하세요: ";
   std::getline(std::cin, title);
@@ -58,10 +60,12 @@ Email Client::EmailInput() {
 }
 
 void Client::ShowOptions() {
+
   if (AuthPlain.empty()) {
     std::cout << "로그인이 필요합니다. 로그인을 해주세요." << std::endl;
     Login();
-  } else {
+  } 
+  {
     std::cout << "다음 중 원하는 메뉴를 선택해주세요:\n";
     std::cout << "1. 이메일 발송\n";
     std::cout << "2. 이메일 수신 (리스트 보기)\n";
@@ -95,7 +99,7 @@ void Client::ShowOptions() {
       int id;
       std::cout << "출력할 이메일 인덱스 번호 입력 : ";
       std::cin >> id;
-      //Email raw_email =  
+      // Email raw_email =sju
       mailbox.pop3.printMessage(id);
       // EmailParser parser(raw_email);
       // Email email = parser.getEmail();
@@ -146,7 +150,14 @@ void Client::ShowOptions() {
     break;
   default:
     std::cout << "잘못된 입력입니다. 다시 시도해주세요." << std::endl;
-    ShowOptions();
     break;
+  }
+};
+int main() {
+  Client client;
+
+  std::cout << "Welcome to Simple Mail Client!" << std::endl;
+  while(1){
+    client.ShowOptions();
   }
 }

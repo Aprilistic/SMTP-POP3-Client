@@ -7,7 +7,7 @@
 #include <string>
 
 POP3::POP3(std::string const &server, int port, bool useTLS) {
-  open(server, port, useTLS);
+  // open(server, port, useTLS);
 }
 
 POP3::~POP3() { close(); }

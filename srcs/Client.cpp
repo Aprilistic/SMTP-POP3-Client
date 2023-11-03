@@ -3,8 +3,6 @@
 #include <termios.h>
 #include <unistd.h>
 #include <limits>
-#include <boost/archive/iterators/base64_from_binary.hpp>
-#include <boost/archive/iterators/transform_width.hpp>
 /*
 #include "SMTP.h"
 #include "POP3.h"
@@ -111,15 +109,6 @@ public:
             ShowOptions();
             break;
         }
-    }
-
-    std::string base64_encode(const std::string &s)
-    {
-        using namespace boost::archive::iterators;
-        typedef base64_from_binary<transform_width<std::string::const_iterator, 6, 8>> base64_enc;
-        auto ptr = s.c_str();
-        auto len = s.size();
-        return std::string(base64_enc(ptr), base64_enc(ptr + len));
     }
 };
 /*

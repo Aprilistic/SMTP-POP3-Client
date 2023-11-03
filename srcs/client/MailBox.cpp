@@ -1,44 +1,45 @@
+#include <string>
+
+#include "client/Client.hpp"
 #include "client/MailBox.hpp"
-#include "pop3/POP3.hpp"
 
+MailBox::MailBox()
+    : smtp(), pop3(__POP3_SERVER_ADDRESS, __POP3_DEFAULT_PORT, true) {}
 
-void MailBox::SendMail(Email email){
-	SMTP::SMTPCycle(email);
+void MailBox::SendMail(Email email) { smtp.SMTPCycle(email); }
+
+Email MailBox::RecvMail(int id) { return (pop3.DownloadMail(id)); }
+
+bool MailBox::DeleteMail(int id) {}
+
+// POP3에서 id번째 이메일을 읽어온 후 sendTo에게 그대로 전달
+bool MailBox::ForwardMail(int id, std::string &sendTo) {
+  Email forwardEmail = pop3.DownloadMail(id);
+
+  forwardEmail.SetRecvFrom(forwardEmail.GetSendTo());
+  forwardEmail.SetSendTo(sendTo);
+
+  std::string fw = "FW: ";
+  fw += forwardEmail.GetTitle();
+  forwardEmail.SetTitle(fw);
+
+  smtp.SMTPCycle(forwardEmail);
 }
 
-Email MailBox::RecvMail(int id){
+// POP3에서 id번째 이메일을 읽어온 후 송/수신자 스왑, body를 채워 전송
+void MailBox::ReplyMail(int id, std::string body) {
+  Email email = pop3.DownloadMail(id);
+  Email replyEmail;
 
+  replyEmail.SetSendTo(email.GetRecvFrom());
+  replyEmail.SetRecvFrom(email.GetSendTo());
 
+  std::string rw = "RW: ";
+  rw += replyEmail.GetTitle();
+  replyEmail.SetTitle(rw);
+  replyEmail.SetBody(body);
+
+  smtp.SMTPCycle(replyEmail);
 }
 
-bool MailBox::DeleteMail(int id){
-
-}
-
-//POP3에서 id번째 이메일을 읽어온 후 sendTo에게 그대로 전달
-bool MailBox::ForwardMail(int id, string &sendTo){
-	Email forwardEmail = POP3::DownloadMail(id);
-
-	forwardEmail.SetRecvFrom(forwardEmail.GetSentTo());
-	forwardEmail.SetSendTo(sendTo);
-	forwardEmail.SetTitle("FW: " + forwardEmail.GetTitle);
-
-	SMTP::SMTPCycle(forwardEmail);
-}
-
-//POP3에서 id번째 이메일을 읽어온 후 송/수신자 스왑, body를 채워 전송
-void MailBox::ReplyMail(int id, string body){
-	Email email = POP3::DownloadMail(id);
-	Email replyEmail;
-
-	replyEmail.SetSendTo(email.GetRecvFrom());
-	replyEmail.SetRecvFrom(email.GetSendTo());
-	replyEmail.SetTitle("RW: " + email.GetTitle());
-	replyEmail.SetBody(body);
-
-	SMTP::SMTPCycle(replyEmail);
-}
-
-void MailBox::ListMailbox(){
-
-}		
+void MailBox::ListMailbox() {}

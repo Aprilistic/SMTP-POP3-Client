@@ -30,7 +30,10 @@ this->useTLS = useTLS;
 }
 
 Socket::Socket(const std::string &inputAddress, int inputPort, bool useTLS)
-    : address(inputAddress), socketFD(-1) {
+    // : address(inputAddress), socketFD(-1) {
+  {
+  address = inputAddress;
+  socketFD = -1;
   std::stringstream portInString;
   portInString << inputPort;
   port = portInString.str();
@@ -41,7 +44,7 @@ Socket::Socket(const std::string &inputAddress, int inputPort, bool useTLS)
 }
 
 void Socket::open() {
-  struct addrinfo hints {};
+  struct addrinfo hints;
   struct addrinfo *result, *resultPointer;
 
   hints.ai_family = AF_INET;
@@ -131,7 +134,7 @@ void Socket::write(const std::string request) {
 
 bool Socket::isReadyToRead() {
   fd_set receiveFd;
-  struct timeval timeout {};
+  struct timeval timeout;
   int selectReturnValue;
 
   FD_ZERO(&receiveFd);

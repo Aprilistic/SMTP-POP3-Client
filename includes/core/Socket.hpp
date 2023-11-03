@@ -40,6 +40,7 @@ private:
   bool isReadyToRead();
   void initTLS();
   void cleanupTLS();
+  void completeTLSHandshake();
 };
 
 class Socket::ConnectionError : public Error {

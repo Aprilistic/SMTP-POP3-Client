@@ -2,44 +2,44 @@
 #define SMTP_HPP
 
 #include <string>
+#include <fstream>
 
-#include <openssl/ssl.h>
 #include <openssl/err.h>
+#include <openssl/ssl.h>
+#include <netinet/in.h>
+
+class Email;
 
 class SMTP {
 private:
+  // 클라이언트로부터 넘겨받을 것
+  const std::string authID = "AHNqdXRlc3RAbmF2ZXIuY29tAHNqdXRlc3RA";
 
-	// 클라이언트로부터 넘겨받을 것
-	const std::string authID = "AHNqdXRlc3RAbmF2ZXIuY29tAHNqdXRlc3RA";
+  const std::string dnsAddress = "naver.com";
+  const std::string smtpServerAddress = "smtp.naver.com";
+  const int smtpPort = 25;
 
-	const std::string dnsAddress = "naver.com";
-	const std::string smtpServerAddress = "smtp.naver.com";
-	const int smtpPort = 25;
+  struct sockaddr_in serv_addr;
+  int status, valread, client_fd;
+  SSL_CTX *ctx;
+  SSL *ssl;
 
-    struct sockaddr_in serv_addr; 
-    int status, valread, client_fd;
-	SSL_CTX *ctx;
-	SSL *ssl;
-
-	std::ofstream report;
-	char recvBuffer[0x200], sendBuffer[0x200];
-	int recvBytes;
-
+  std::ofstream report;
+  char recvBuffer[0x200], sendBuffer[0x200];
+  int recvBytes;
 
 public:
+  SMTP();
 
-	SMTP();
+  void SMTPCycle(Email email);
 
-	static void SMTPCycle(Email email);
+  void ConnectSMTP();
+  void StartTlsSMTP();
+  void AuthLogin();
 
-    void ConnectSMTP();
-	void StartTlsSMTP();
-	void AuthLogin();
+  void SendMail(Email email);
 
-	void SendMail(Email);
-
-	void CloseSMTP();
+  void CloseSMTP();
 };
-
 
 #endif

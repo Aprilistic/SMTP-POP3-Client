@@ -8,24 +8,22 @@
 #include <limits>
 
 #include "core/Base64.hpp"
+#include "core/Config.hpp"
 #include "core/Email.hpp"
 #include "smtp/SMTP.hpp"
 #include "pop3/POP3.hpp"
-#include "client/Mailbox.hpp"
+#include "MailBox.hpp"
 
 class Client
 {
 private:
     std::string ID;
     std::string AuthPlain;
-    const std::string dnsAddress = "naver.com";
-    Mailbox mailbox;
-    SMTP smtp;
-    POP3 pop3;
+    const std::string dnsAddress;
+    MailBox mailbox;
 
 public:
-    Client(const std::string &dns);
-
+    Client();
     bool Login();
     void Logout();
     Email EmailInput();

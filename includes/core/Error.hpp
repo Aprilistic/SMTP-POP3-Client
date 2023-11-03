@@ -14,7 +14,7 @@ public:
   Error(std::string what = "", std::string why = "");
   virtual ~Error() throw();
 
-  const char *what() const throw();
+  // const char *what() const throw();
 };
 
 #endif

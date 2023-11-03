@@ -2,16 +2,21 @@
 #define MAILBOX_HPP
 
 #include "core/Email.hpp"
+#include "pop3/POP3.hpp"
+#include "smtp/SMTP.hpp"
 
-class MailBox{
+class MailBox {
 public:
-	static void SendMail(Email email);
-    static Email RecvMail(int id);
-	static bool DeleteMail(int id);
-	static bool ForwardMail(int id, string &sendTo);
-	static void ReplyMail(int id, string body);
-	static void ListMailbox();		
-};
+	MailBox();
 
+  SMTP smtp;
+  POP3 pop3;
+  void SendMail(Email email);
+  Email RecvMail(int id);
+  bool DeleteMail(int id);
+  bool ForwardMail(int id, std::string &sendTo);
+  void ReplyMail(int id, std::string body);
+  void ListMailbox();
+};
 
 #endif

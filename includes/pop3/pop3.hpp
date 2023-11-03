@@ -1,16 +1,17 @@
-#ifndef POP3SESSION_HPP
-#define POP3SESSION_HPP
+#ifndef POP3_HPP
+#define POP3_HPP
 
 #include <list>
 #include <string>
 
 #include "core/Base64.hpp"
 #include "core/Error.hpp"
+#include "core/Socket.hpp"
 
-class Socket;
+class Email;
 
 class POP3 {
-  std::unique_ptr<Socket> socket;
+  Socket *socket;
 
 public:
   POP3(std::string const &server, int port, bool useTLS = false);
@@ -19,7 +20,7 @@ public:
   void authenticate(std::string const &username, std::string const &password);
   void printMessageList();
   void printMessage(int messageId);
-  static Email DownloadMail(int messageId);
+  Email DownloadMail(int messageId);
 
   /* Exceptions */
   class ServerError;
@@ -39,6 +40,7 @@ struct POP3::ServerResponse {
   bool status; /*< It's true on +OK, false on -ERR */
   std::string statusMessage;
   std::list<std::string> data;
+  std::string rawEmail;
 };
 
 class POP3::ServerError : public Error {

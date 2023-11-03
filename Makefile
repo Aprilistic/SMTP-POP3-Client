@@ -1,4 +1,4 @@
-NAME = SMTP_POP3_client
+NAME = EmailClient
 CXX = g++
 CXXFLAGS = -Wall -Wextra -Werror -MMD
 LDFLAGS = -lssl -lcrypto

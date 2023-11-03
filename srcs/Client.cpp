@@ -47,8 +47,8 @@ public:
 
         tcsetattr(STDIN_FILENO, TCSANOW, &oldt); // 원래의 터미널 설정을 복원
         
-        // std::cout << "입력된 아이디: " << id << std::endl;
-        // std::cout << "입력된 비밀번호: " << password << std::endl;
+         std::cout << "입력된 아이디: " << input_id << std::endl;
+         std::cout << "입력된 비밀번호: " << input_password << std::endl;
 
         // 아이디와 비밀번호를 base64로 인코딩하여 멤버 변수에 저장
         this->ID = base64_encode(input_id);

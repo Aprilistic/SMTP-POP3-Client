@@ -30,29 +30,29 @@ vpath %.cpp $(SRCS_DIR)
 all : $(OBJ_DIR) $(NAME)
 
 $(NAME) : $(OBJS)
-    $(CXX) $(OBJS) $(LDFLAGS) -o $@
-
+	$(CXX) $(OBJS) $(LDFLAGS) -o $@
+	
 $(OBJ_DIR) :
-    mkdir -p $@
-
+	mkdir -p $@
+	
 $(OBJ_DIR)/%.o : %.cpp
-    $(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 clean :
-    rm -rf $(OBJ_DIR)
-    rm -rf ./$(NAME).dSYM
-    rm -f $(NAME)
+	rm -rf $(OBJ_DIR)
+	rm -rf ./$(NAME).dSYM
+	rm -f $(NAME)
 
 fclean : clean
-    rm -f $(NAME)
-    rm -f leaks.txt
+	rm -f $(NAME)
+	rm -f leaks.txt
 
 re :
-    make fclean
-    make all -j4
+	make fclean
+	make all -j4
 
 leaks :
-    valgrind --leak-check=full --show-leak-kinds=all --log-file=leaks.txt $(PWD)/$(NAME) $(PWD)/configs/example.conf
+	valgrind --leak-check=full --show-leak-kinds=all --log-file=leaks.txt $(PWD)/$(NAME) $(PWD)/configs/example.conf
 
 .PHONY : all clean fclean re leaks
 

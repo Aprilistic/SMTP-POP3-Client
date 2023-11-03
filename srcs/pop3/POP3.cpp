@@ -1,14 +1,13 @@
 #include "pop3/POP3.hpp"
-#include "core/Socket.hpp"
 #include "core/Email.hpp"
+#include "core/Socket.hpp"
 
 #include <iostream>
 #include <sstream>
 #include <string>
 
-POP3::POP3(std::string const &server, int port, bool useTLS) {
-  // open(server, port, useTLS);
-}
+POP3::POP3(std::string const &server, int port, bool useTLS)
+    : socket(nullptr), server(server), port(port), useTLS(useTLS) {}
 
 POP3::~POP3() { close(); }
 
@@ -71,20 +70,14 @@ void POP3::close() {
     sendCommand("QUIT");
   }
   delete socket;
+  socket = nullptr;
 }
 
-void POP3::authenticate(std::string const &username,
-                        std::string const &password) {
+void POP3::authenticate(std::string const &encodedCredentials) {
   ServerResponse response;
 
-  // Format the credentials: \0username\0password
-  std::string credentials = "\0" + username + "\0" + password;
-
-  // Base64 encode the credentials
-  // std::string encodedCredentials = base64_encode(credentials);
-
   // Send the AUTH PLAIN command with the encoded credentials
-  // sendCommand("AUTH PLAIN " + encodedCredentials);
+  sendCommand("AUTH PLAIN " + encodedCredentials);
   getResponse(&response);
 
   // Check the server's response
@@ -140,7 +133,16 @@ void POP3::printMessage(int messageId) {
   }
 }
 
-Email POP3::DownloadMail(int messageID){
+Email POP3::DownloadMail(std::string const &encodedCredentials) {
+  open(server, port, useTLS);
+  authenticate(encodedCredentials);
+  printMessageList();
+
+  int messageID;
+  std::cin.clear();
+  std::cout << "Enter the message ID you want to download: ";
+  std::cin >> messageID;
+  
   ServerResponse response;
 
   std::stringstream command;
@@ -151,12 +153,20 @@ Email POP3::DownloadMail(int messageID){
   getResponse(&response);
   if (!response.status) {
     throw ServerError("Unable to retrieve requested message",
-        response.statusMessage);
+                      response.statusMessage);
   }
 
   getMultilineData(&response);
 
+  std::cout << "Message:" << std::endl;
+  for (std::list<std::string>::iterator line = response.data.begin();
+       line != response.data.end(); line++) {
+    std::cout << *line << std::endl;
+  }
+
   Email email(response.rawEmail);
+
+  close();
 
   return email;
 }

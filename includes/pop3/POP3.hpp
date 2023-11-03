@@ -11,21 +11,20 @@
 class Email;
 
 class POP3 {
-  Socket *socket;
-
 public:
   POP3(std::string const &server, int port, bool useTLS = false);
   ~POP3();
 
-  void authenticate(std::string const &username, std::string const &password);
-  void printMessageList();
-  void printMessage(int messageId);
-  Email DownloadMail(int messageId);
+  Email DownloadMail(std::string const &encodedCredentials);
 
   /* Exceptions */
   class ServerError;
 
 private:
+  void authenticate(std::string const &encodedCredentials);
+  void printMessageList();
+  void printMessage(int messageId);
+
   struct ServerResponse;
   void sendCommand(std::string const &command);
   void getResponse(ServerResponse *response);
@@ -33,6 +32,12 @@ private:
 
   void open(std::string const &server, int port, bool useTLS);
   void close();
+
+private:
+  Socket *socket;
+  const std::string server;
+  const int port;
+  bool useTLS;
 };
 
 struct POP3::ServerResponse {

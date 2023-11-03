@@ -1,5 +1,6 @@
 #include "pop3/POP3.hpp"
 #include "core/Socket.hpp"
+#include "core/Email.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -47,14 +48,14 @@ void POP3::getMultilineData(ServerResponse *response) {
       {
         buffer.erase(0, 1);
       }
-
+      response->rawEmail += buffer;
       response->data.push_back(buffer);
     }
   }
 }
 
 void POP3::open(std::string const &server, int port, bool useTLS) {
-  socket = std::make_unique<Socket>(server, port, useTLS);
+  socket = new Socket(server, port, useTLS);
 
   ServerResponse welcomeMessage;
 
@@ -69,10 +70,11 @@ void POP3::close() {
   if (socket != NULL) {
     sendCommand("QUIT");
   }
+  delete socket;
 }
 
 void POP3::authenticate(std::string const &username,
-                               std::string const &password) {
+                        std::string const &password) {
   ServerResponse response;
 
   // Format the credentials: \0username\0password
@@ -82,7 +84,7 @@ void POP3::authenticate(std::string const &username,
   // std::string encodedCredentials = base64_encode(credentials);
 
   // Send the AUTH PLAIN command with the encoded credentials
-  sendCommand("AUTH PLAIN " + encodedCredentials);
+  // sendCommand("AUTH PLAIN " + encodedCredentials);
   getResponse(&response);
 
   // Check the server's response
@@ -139,5 +141,22 @@ void POP3::printMessage(int messageId) {
 }
 
 Email POP3::DownloadMail(int messageID){
-  
+  ServerResponse response;
+
+  std::stringstream command;
+  command << "RETR " << messageID;
+
+  sendCommand(command.str());
+
+  getResponse(&response);
+  if (!response.status) {
+    throw ServerError("Unable to retrieve requested message",
+        response.statusMessage);
+  }
+
+  getMultilineData(&response);
+
+  Email email(response.rawEmail);
+
+  return email;
 }

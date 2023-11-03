@@ -1,6 +1,6 @@
 NAME = EmailClient
 CXX = g++
-CXXFLAGS = -Wall -Wextra -Werror -MMD
+CXXFLAGS = -Wall -Wextra -Werror -MMD -DUSE_TLS
 LDFLAGS = -lssl -lcrypto
 
 UNAME_S := $(shell uname -s)
@@ -10,11 +10,11 @@ ifeq ($(UNAME_S),Darwin)
     LDFLAGS += -L$(OPENSSL_DIR)/lib
 endif
 
-INCLUDES = -I ./includes \
-            -I ./includes/core
+INCLUDES = -I ./includes 
 OBJ_DIR = objs
 
 SRCS := $(wildcard srcs/core/*.cpp) \
+        $(wildcard srcs/POP3/*.cpp) \
         $(wildcard srcs/*.cpp)
         
 SRCS_DIR := $(dir $(SRCS))

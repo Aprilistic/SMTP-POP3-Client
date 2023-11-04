@@ -40,7 +40,7 @@ void Client::Logout() {
 
   delete mailbox;
   mailbox = nullptr;
-  std::cout << "로그아웃 완료!";
+  //std::cout << "로그아웃 완료!";
 }
 
 Email Client::EmailInput() {

@@ -42,7 +42,6 @@ clean :
 	rm -rf $(OBJ_DIR)
 	rm -rf ./$(NAME).dSYM
 	rm -f $(NAME)
-	rm -f SMTP.txt
 
 fclean : clean
 	rm -f $(NAME)

@@ -18,20 +18,20 @@
 
 Socket::Socket(const std::string &inputAddress, const std::string &inputPort,
                bool useTLS, PROTOCOL protocol)
-    : useTLS(useTLS)
-    , protocol(protocol) {
+    : useTLS(useTLS), protocol(protocol) {
   address = inputAddress;
   port = inputPort;
   socketFD = -1;
   if (useTLS) {
     initTLS();
   }
+  
   open();
 }
 
-Socket::Socket(const std::string &inputAddress, int inputPort, bool useTLS, PROTOCOL protocol)
-    : useTLS(useTLS)
-    , protocol(protocol) {
+Socket::Socket(const std::string &inputAddress, int inputPort, bool useTLS,
+               PROTOCOL protocol)
+    : useTLS(useTLS), protocol(protocol) {
   address = inputAddress;
   socketFD = -1;
   std::stringstream portInString;
@@ -185,9 +185,9 @@ size_t Socket::readLine(std::string *line) {
 }
 
 void Socket::initTLS() {
-  SSL_library_init();
-  OpenSSL_add_all_algorithms();
-  SSL_load_error_strings();
+  // SSL_library_init();	// OpenSSL 라이브러리 초기화
+  // OpenSSL_add_all_algorithms();	//OpenSSL 라이브러리에서 사용할 수 있는 모든 암호화 알고리즘을 로드
+  // SSL_load_error_strings();	// OpenSSL 내부 오류 메시지를 로드, 오류 메시지를 인간이 이해하기 쉬운 형태로 출력할 수 있도록 도와줌
 
   const SSL_METHOD *method = TLS_client_method();
   ctx = SSL_CTX_new(method);
@@ -210,8 +210,10 @@ void Socket::completeTLSHandshake() {
   }
 
   std::stringstream ss;
-  if (protocol == PROTOCOL::SMTP){
-    ss << "ehlo " << address << "\r\n";
+  if (protocol == PROTOCOL::SMTP) {
+    ss << "ehlo "
+       << "naver.com"
+       << "\r\n";
     send(socketFD, ss.str().c_str(), (int)ss.str().length(), 0);
 
     ss.clear();
@@ -223,14 +225,22 @@ void Socket::completeTLSHandshake() {
     ss << "STARTTLS\r\n";
     send(socketFD, ss.str().c_str(), (int)ss.str().length(), 0);
 
-    recvBytes = recv(socketFD, recvBuffer, sizeof(recvBuffer), 0);
+   
+
     recvBuffer[recvBytes] = '\0';
 
+    std::cout << "recvBuffer: " << recvBuffer << std::endl;
     if (strstr(recvBuffer, "220") == NULL) {
       ::close(socketFD);
       throw std::runtime_error("'STARTTLS not supported'");
     }
   }
+
+  SSL_library_init();	// OpenSSL 라이브러리 초기화
+  OpenSSL_add_all_algorithms();	//OpenSSL 라이브러리에서 사용할 수 있는 모든 암호화 알고리즘을 로드
+  SSL_load_error_strings();	// OpenSSL 내부 오류 메시지를 로드, 오류 메시지를 인간이 이해하기 쉬운 형태로 출력할 수 있도록 도와줌
+  
+  initTLS();
 
   SSL_set_fd(ssl, socketFD);
   if (SSL_connect(ssl) <= 0) {

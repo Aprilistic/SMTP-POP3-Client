@@ -17,14 +17,13 @@
 class Client
 {
 private:
-    std::string ID;
-    std::string AuthPlain;
     const std::string dnsAddress;
-    MailBox mailbox;
+    MailBox *mailbox;
 
 public:
     Client();
-    bool Login();
+    ~Client();
+    void Login();
     void Logout();
     Email EmailInput();
     void ShowOptions();

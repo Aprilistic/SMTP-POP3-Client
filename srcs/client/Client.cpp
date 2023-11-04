@@ -1,8 +1,13 @@
 #include "client/Client.hpp"
 
-Client::Client() : dnsAddress(__DOMAIN_NAME) {}
+Client::Client() : dnsAddress(__DOMAIN_NAME), mailbox(nullptr) {}
 
-bool Client::Login() {
+Client::~Client() {
+    if (mailbox) {
+        delete mailbox;
+    }
+}
+void Client::Login() {
   std::string input_id;
   std::string input_password;
 
@@ -22,15 +27,25 @@ bool Client::Login() {
 
   tcsetattr(STDIN_FILENO, TCSANOW, &oldt); // 원래의 터미널 설정을 복원
 
-  // 아이디와 비밀번호를 base64로 인코딩하여 멤버 변수에 저장
-  std::string combined = "\0" + input_id + "\0" + input_password;
-  this->AuthPlain = base64_encode(combined);
-  this->ID = input_id;
+  input_id = base64_encode(input_id);
+  input_password = base64_encode(input_password);
 
-  return true;
+  mailbox = new MailBox();
+  mailbox->SetID(input_id);
+  mailbox->SetPassword(input_password);
+
+  // 아이디와 비밀번호를 base64로 인코딩하여 멤버 변수에 저장
+  //"\0" + input_id + "\0" + input_password;
+
 }
 
-void Client::Logout() {}
+void Client::Logout() {
+
+    delete mailbox;
+    mailbox = nullptr;
+    std::cout << "로그아웃 완료!";
+  
+  }
 
 Email Client::EmailInput() {
   std::string date, sendTo, recvFrom, title, body, line;
@@ -52,7 +67,7 @@ Email Client::EmailInput() {
 
   Email email;
   email.SetSendTo(sendTo);
-  email.SetRecvFrom(ID);
+  email.SetRecvFrom(mailbox->GetID());
   email.SetTitle(title);
   email.SetBody(body);
 
@@ -61,7 +76,7 @@ Email Client::EmailInput() {
 
 void Client::ShowOptions() {
 
-  if (AuthPlain.empty()) {
+  if (!mailbox) {
     std::cout << "로그인이 필요합니다. 로그인을 해주세요." << std::endl;
     Login();
   } 
@@ -84,13 +99,13 @@ void Client::ShowOptions() {
     {
       Email email;
       email = EmailInput();
-      mailbox.SendMail(email);
+      mailbox->SendMail(email);
       break;
     }
   case 2:
     // 이메일 수신 (리스트 보기)
     {
-      mailbox.ListMailbox();
+      mailbox->ListMailbox();
       break;
     }
   case 3:
@@ -100,7 +115,8 @@ void Client::ShowOptions() {
       std::cout << "출력할 이메일 인덱스 번호 입력 : ";
       std::cin >> id;
       // Email raw_email =sju
-      mailbox.pop3.printMessage(id);
+      //mailbox->pop3.authenticate(mailbox->GetID());
+      //mailbox->pop3.printMessage(id);
       // EmailParser parser(raw_email);
       // Email email = parser.getEmail();
       //  email 객체를 사용하여 필요한 작업 수행
@@ -113,7 +129,7 @@ void Client::ShowOptions() {
       std::cout << "전달할 이메일 id 입력 : ";
       std::string sendTo;
       std::cin >> id >> sendTo;
-      mailbox.ForwardMail(id, sendTo);
+      mailbox->ForwardMail(id, sendTo);
       break;
     }
   case 5:
@@ -132,7 +148,7 @@ void Client::ShowOptions() {
         }
       }
 
-      mailbox.ReplyMail(id, body);
+      mailbox->ReplyMail(id, body);
       break;
     }
   case 6:
@@ -141,7 +157,7 @@ void Client::ShowOptions() {
       int id;
       std::cout << "삭제할 이메일 id 입력 : ";
       std::cin >> id;
-      mailbox.DeleteMail(id);
+      mailbox->DeleteMail(id);
       break;
     }
   case 7:

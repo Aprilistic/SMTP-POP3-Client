@@ -12,7 +12,9 @@ class Email;
 
 class POP3 {
 public:
-  POP3(std::string const &server, int port, bool useTLS = false);
+  POP3(std::string const &server, int port = 995, bool useTLS = true,
+       std::string const &ID = "",
+       std::string const &Password = "");
   ~POP3();
 
   Email DownloadMail(std::string const &encodedCredentials);
@@ -21,7 +23,8 @@ public:
   class ServerError;
 
 private:
-  void authenticate(std::string const &encodedCredentials);
+  void authenticate(std::string const &ID,
+                    std::string const &Password);
   void printMessageList();
   void printMessage(int messageId);
 
@@ -35,8 +38,6 @@ private:
 
 private:
   Socket *socket;
-  const std::string server;
-  const int port;
   bool useTLS;
 };
 

@@ -27,12 +27,10 @@ void Client::Login() {
 
   tcsetattr(STDIN_FILENO, TCSANOW, &oldt); // 원래의 터미널 설정을 복원
 
-  input_id = base64_encode(input_id);
-  input_password = base64_encode(input_password);
+  // input_id = base64_encode(input_id);
+  // input_password = base64_encode(input_password);
 
-  mailbox = new MailBox();
-  mailbox->SetID(input_id);
-  mailbox->SetPassword(input_password);
+  mailbox = new MailBox(input_id, input_password);
 
   // 아이디와 비밀번호를 base64로 인코딩하여 멤버 변수에 저장
   //"\0" + input_id + "\0" + input_password;

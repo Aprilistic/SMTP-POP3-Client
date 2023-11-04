@@ -3,8 +3,10 @@
 #include "client/Client.hpp"
 #include "client/MailBox.hpp"
 
-MailBox::MailBox()
-    : smtp(), pop3(__POP3_SERVER_ADDRESS, __POP3_DEFAULT_PORT, true) {}
+MailBox::MailBox(std::string const &ID, std::string const &password)
+    : m_ID(ID), m_password(password)
+    , smtp()
+    , pop3(__POP3_SERVER_ADDRESS, __POP3_DEFAULT_PORT, true, ID, password) {}
 
 void MailBox::SendMail(Email email) { smtp.SMTPCycle(email); }
 

@@ -13,6 +13,6 @@
 
 /* Timeout for reading from socket. In case
    the server doesn't respond */
-#define __SOCKET_READ_TIMEOUT 30 // seconds
+#define __SOCKET_READ_TIMEOUT 10 // seconds
 
 #endif

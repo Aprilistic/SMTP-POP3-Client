@@ -11,7 +11,7 @@ private:
   std::string m_password;
 
 public:
-	MailBox();
+	MailBox(std::string const &ID, std::string const &password);
   
   SMTP smtp;
   POP3 pop3;
@@ -22,8 +22,6 @@ public:
   void ReplyMail(int id, std::string body);
   void ListMailbox();
 
-  void SetID(std::string &ID) { m_ID = ID; }
-  void SetPassword(std::string &password) { m_password = password; }
   std::string &GetID() { return m_ID; }
   std::string &GetPassword() { return m_password; }
 };

@@ -12,6 +12,7 @@ int main() {
       client.ShowOptions();
     } catch (std::exception &e) {
       std::cout << e.what() << std::endl;
+			client.Logout();
     }
   }
 }

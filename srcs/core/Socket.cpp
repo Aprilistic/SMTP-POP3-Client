@@ -17,12 +17,11 @@
 #include <openssl/ssl.h>
 
 Socket::Socket(const std::string &inputAddress, const std::string &inputPort,
-               bool useTLS){
-    // : address(inputAddress), port(inputPort), socketFD(-1) {
-address = inputAddress;
-port = inputPort;
-socketFD = -1;
-this->useTLS = useTLS;
+               bool useTLS)
+    : useTLS(useTLS) {
+  address = inputAddress;
+  port = inputPort;
+  socketFD = -1;
   if (useTLS) {
     initTLS();
   }
@@ -30,8 +29,7 @@ this->useTLS = useTLS;
 }
 
 Socket::Socket(const std::string &inputAddress, int inputPort, bool useTLS)
-    // : address(inputAddress), socketFD(-1) {
-  {
+    : useTLS(useTLS) {
   address = inputAddress;
   socketFD = -1;
   std::stringstream portInString;
@@ -47,6 +45,7 @@ void Socket::open() {
   struct addrinfo hints;
   struct addrinfo *result, *resultPointer;
 
+  memset(&hints, 0, sizeof(struct addrinfo));
   hints.ai_family = AF_INET;
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_flags = 0;
@@ -96,6 +95,8 @@ Socket::~Socket() {
 void Socket::close() {
   ::shutdown(socketFD, SHUT_RDWR);
   ::close(socketFD);
+
+  EVP_cleanup();
   socketFD = -1;
 }
 
@@ -111,7 +112,6 @@ size_t Socket::read(char *buffer, size_t size) {
   } else {
     bytesRead = ::read(socketFD, buffer, size);
   }
-
   if (bytesRead < 0) {
     throw IOError("Receiving error", "Unable to read data from remote host");
   }
@@ -133,62 +133,53 @@ void Socket::write(const std::string request) {
 }
 
 bool Socket::isReadyToRead() {
+  if (useTLS && SSL_pending(ssl) > 0) {
+    return true; // Data is available in OpenSSL's internal buffer
+  }
+
   fd_set receiveFd;
   struct timeval timeout;
-  int selectReturnValue;
-
   FD_ZERO(&receiveFd);
   FD_SET(socketFD, &receiveFd);
 
   timeout.tv_sec = __SOCKET_READ_TIMEOUT;
   timeout.tv_usec = 0;
 
-  selectReturnValue =
-      select(socketFD + 1, &receiveFd, nullptr, nullptr, &timeout);
-
-  return selectReturnValue > 0;
+  return select(socketFD + 1, &receiveFd, nullptr, nullptr, &timeout) > 0;
 }
 
-void Socket::readAll(std::string *response)
-{
-    char buffer;
+void Socket::readAll(std::string *response) {
+  char buffer;
 
-    while (readCharacter(&buffer))
-    {
-        *response += buffer;
-    }
+  while (readCharacter(&buffer)) {
+    *response += buffer;
+  }
 }
 
-bool Socket::readCharacter(char* buffer)
-{
-    if (read(buffer, 1) > 0)
-    {
-        return true;
-    }
-    return false;
+bool Socket::readCharacter(char *buffer) {
+  if (read(buffer, 1) > 0) {
+    return true;
+  }
+  return false;
 }
 
-size_t Socket::readLine(std::string* line)
-{
-    char buffer[2] = "";
-    *line = "";
-    size_t bytesRead = 0;
+size_t Socket::readLine(std::string *line) {
+  char buffer[2] = "";
+  *line = "";
+  size_t bytesRead = 0;
 
-    if (readCharacter(&(buffer[1])))
-    {
-        do
-        {
-            *line     += buffer[0]; // add char to string
-            buffer[0]  = buffer[1];
-            bytesRead++;
-        }
-        while (readCharacter(&(buffer[1])) &&
-               !(buffer[0] == '\r' && buffer[1] == '\n'));
-     
-        line->erase(0, 1);
-    }
+  if (readCharacter(&(buffer[1]))) {
+    do {
+      *line += buffer[0]; // add char to string
+      buffer[0] = buffer[1];
+      bytesRead++;
+    } while (readCharacter(&(buffer[1])) &&
+             !(buffer[0] == '\r' && buffer[1] == '\n'));
 
-    return bytesRead;
+    line->erase(0, 1);
+  }
+
+  return bytesRead;
 }
 
 void Socket::initTLS() {

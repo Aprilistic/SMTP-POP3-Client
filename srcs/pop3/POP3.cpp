@@ -99,7 +99,7 @@ void POP3::authenticate(std::string const &ID, std::string const &Password) {
   std::cout << "Authentication successful" << std::endl;
 }
 
-void POP3::printMessageList() {
+void POP3::PrintMessageList() {
   ServerResponse response;
 
   sendCommand("LIST");
@@ -124,7 +124,7 @@ void POP3::printMessageList() {
   }
 }
 
-void POP3::printMessage(int messageId) {
+void POP3::PrintMessage(int messageId) {
   ServerResponse response;
 
   std::stringstream command;
@@ -146,6 +146,6 @@ void POP3::printMessage(int messageId) {
   }
 }
 
-Email POP3::DownloadMail(std::string const &encodedCredentials) {
-  return Email();
+Email POP3::DownloadMail(const int messageID) { 
+  return Email(); 
 }

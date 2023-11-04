@@ -50,6 +50,7 @@ Email::Email(const std::string &rawEmail){
         SetBody(body); // Set the parsed body into the email object
     }
 
+    //copy assignment operator
     Email &Email::operator=(const Email &copy) {
         if (this != &copy) {
             this->m_date = copy.m_date;

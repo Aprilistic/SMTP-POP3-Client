@@ -17,23 +17,22 @@ public:
        std::string const &Password = "");
   ~POP3();
 
-  Email DownloadMail(std::string const &encodedCredentials);
+  Email DownloadMail(const int messageID);
+  void PrintMessageList();
+  void PrintMessage(int messageId);
 
   /* Exceptions */
   class ServerError;
 
 private:
-  void authenticate(std::string const &ID,
-                    std::string const &Password);
-  void printMessageList();
-  void printMessage(int messageId);
-
   struct ServerResponse;
   void sendCommand(std::string const &command);
   void getResponse(ServerResponse *response);
   void getMultilineData(ServerResponse *response);
 
   void open(std::string const &server, int port, bool useTLS);
+  void authenticate(std::string const &ID,
+                    std::string const &Password);
   void close();
 
 private:

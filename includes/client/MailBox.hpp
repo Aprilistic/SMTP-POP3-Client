@@ -16,6 +16,7 @@ public:
   SMTP smtp;
   POP3 pop3;
   void SendMail(Email email);
+  void ReadMail(int id);
   Email RecvMail(int id);
   bool DeleteMail(int id);
   bool ForwardMail(int id, std::string &sendTo);

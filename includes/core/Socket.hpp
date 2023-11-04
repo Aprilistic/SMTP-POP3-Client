@@ -18,9 +18,9 @@ class Socket {
 
 public:
   // Constructors and Destructor
-  Socket(std::string const &inputAddress, int inputPort, bool useTLS = false);
+  Socket(std::string const &inputAddress, int inputPort, bool useTLS = true);
   Socket(std::string const &inputAddress, std::string const &inputPort,
-         bool useTLS = false);
+         bool useTLS = true);
   ~Socket();
 
   // Methods

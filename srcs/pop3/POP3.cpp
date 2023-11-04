@@ -6,6 +6,7 @@
 #include <sstream>
 #include <string>
 
+//POP3 constructor, opens a connection to the server and authenticates the user
 POP3::POP3(std::string const &server, int port, bool useTLS,
            std::string const &ID, std::string const &Password)
     : socket(nullptr), useTLS(useTLS) {
@@ -13,12 +14,15 @@ POP3::POP3(std::string const &server, int port, bool useTLS,
   authenticate(ID, Password);
 }
 
+//POP3 destructor, closes the connection to the server
 POP3::~POP3() { close(); }
 
+//Sends a command to the server followed by a CRLF
 void POP3::sendCommand(std::string const &command) {
   socket->write(command + "\r\n");
 }
 
+//Reads the server's response and stores it in a ServerResponse struct
 void POP3::getResponse(ServerResponse *response) {
   std::string buffer;
   socket->readLine(&buffer);

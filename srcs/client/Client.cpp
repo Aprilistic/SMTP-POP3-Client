@@ -111,12 +111,6 @@ void Client::ShowOptions() {
       std::cout << "출력할 이메일 인덱스 번호 입력 : ";
       std::cin >> id;
       mailbox->pop3.PrintMessage(id);
-      // Email raw_email =sju
-      // mailbox->pop3.authenticate(mailbox->GetID());
-      // mailbox->pop3.printMessage(id);
-      // EmailParser parser(raw_email);
-      // Email email = parser.getEmail();
-      //  email 객체를 사용하여 필요한 작업 수행
       break;
     }
   case 4:
@@ -154,7 +148,7 @@ void Client::ShowOptions() {
       int id;
       std::cout << "삭제할 이메일 id 입력 : ";
       std::cin >> id;
-      mailbox->DeleteMail(id);
+      mailbox->pop3.DeleteMessage(id);
       break;
     }
   case 7:
@@ -166,15 +160,3 @@ void Client::ShowOptions() {
     break;
   }
 };
-int main() {
-  Client client;
-
-  std::cout << "Welcome to Simple Mail Client!" << std::endl;
-  while (1) {
-    try {
-      client.ShowOptions();
-    } catch (std::exception &e) {
-      std::cout << e.what() << std::endl;
-    }
-  }
-}

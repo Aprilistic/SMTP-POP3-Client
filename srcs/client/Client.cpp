@@ -3,9 +3,9 @@
 Client::Client() : dnsAddress(__DOMAIN_NAME), mailbox(nullptr) {}
 
 Client::~Client() {
-    if (mailbox) {
-        delete mailbox;
-    }
+  if (mailbox) {
+    delete mailbox;
+  }
 }
 void Client::Login() {
   std::string input_id;
@@ -13,7 +13,8 @@ void Client::Login() {
 
   std::cout << "아이디를 입력하세요: ";
   std::cin >> input_id;
-  std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n'); // 버퍼를 비움
+  std::cin.ignore(std::numeric_limits<std::streamsize>::max(),
+                  '\n'); // 버퍼를 비움
 
   std::cout << "비밀번호를 입력하세요: ";
 
@@ -27,23 +28,20 @@ void Client::Login() {
 
   tcsetattr(STDIN_FILENO, TCSANOW, &oldt); // 원래의 터미널 설정을 복원
 
-  // input_id = base64_encode(input_id);
-  // input_password = base64_encode(input_password);
+  std::cout << "\n";
 
   mailbox = new MailBox(input_id, input_password);
 
   // 아이디와 비밀번호를 base64로 인코딩하여 멤버 변수에 저장
   //"\0" + input_id + "\0" + input_password;
-
 }
 
 void Client::Logout() {
 
-    delete mailbox;
-    mailbox = nullptr;
-    std::cout << "로그아웃 완료!";
-  
-  }
+  delete mailbox;
+  mailbox = nullptr;
+  std::cout << "로그아웃 완료!";
+}
 
 Email Client::EmailInput() {
   std::string date, sendTo, recvFrom, title, body, line;
@@ -77,7 +75,7 @@ void Client::ShowOptions() {
   if (!mailbox) {
     std::cout << "로그인이 필요합니다. 로그인을 해주세요." << std::endl;
     Login();
-  } 
+  }
   {
     std::cout << "다음 중 원하는 메뉴를 선택해주세요:\n";
     std::cout << "1. 이메일 발송\n";
@@ -112,9 +110,10 @@ void Client::ShowOptions() {
       int id;
       std::cout << "출력할 이메일 인덱스 번호 입력 : ";
       std::cin >> id;
+      mailbox->pop3.PrintMessage(id);
       // Email raw_email =sju
-      //mailbox->pop3.authenticate(mailbox->GetID());
-      //mailbox->pop3.printMessage(id);
+      // mailbox->pop3.authenticate(mailbox->GetID());
+      // mailbox->pop3.printMessage(id);
       // EmailParser parser(raw_email);
       // Email email = parser.getEmail();
       //  email 객체를 사용하여 필요한 작업 수행
@@ -171,11 +170,10 @@ int main() {
   Client client;
 
   std::cout << "Welcome to Simple Mail Client!" << std::endl;
-  while(1){
+  while (1) {
     try {
-    client.ShowOptions();
-    }
-    catch (std::exception &e) {
+      client.ShowOptions();
+    } catch (std::exception &e) {
       std::cout << e.what() << std::endl;
     }
   }

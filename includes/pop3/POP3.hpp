@@ -17,9 +17,11 @@ public:
        std::string const &Password = "");
   ~POP3();
 
-  Email DownloadMail(const int messageID);
+  Email DownloadMessage(const int messageID);
   void PrintMessageList();
   void PrintMessage(int messageId);
+  void DeleteMessage(int messageId);
+  void ResetMailbox();
 
   /* Exceptions */
   class ServerError;

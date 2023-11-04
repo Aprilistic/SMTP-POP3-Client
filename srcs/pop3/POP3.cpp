@@ -116,11 +116,12 @@ void POP3::PrintMessageList() {
     std::cout << "No messages available on the server." << std::endl;
   }
 
+  std::cout << "Message list:" << std::endl;
   int spacePosition = 0;
   for (std::list<std::string>::iterator line = response.data.begin();
        line != response.data.end(); line++) {
     spacePosition = line->find(' ');
-    std::cout << line->substr(0, spacePosition) << std::endl;
+    std::cout << "#" << line->substr(0, spacePosition) << std::endl;
   }
 }
 
@@ -146,6 +147,30 @@ void POP3::PrintMessage(int messageId) {
   }
 }
 
-Email POP3::DownloadMail(const int messageID) { 
-  return Email(); 
+Email POP3::DownloadMessage(const int messageID) { return Email(); }
+
+void POP3::DeleteMessage(int messageId) {
+  ServerResponse response;
+
+  std::stringstream command;
+  command << "DELE " << messageId;
+
+  sendCommand(command.str());
+
+  getResponse(&response);
+  if (!response.status) {
+    throw ServerError("Unable to delete requested message",
+                      response.statusMessage);
+  }
+}
+
+void POP3::ResetMailbox() {
+  ServerResponse response;
+
+  sendCommand("RSET");
+
+  getResponse(&response);
+  if (!response.status) {
+    throw ServerError("Unable to reset mailbox", response.statusMessage);
+  }
 }

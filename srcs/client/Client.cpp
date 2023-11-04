@@ -30,23 +30,34 @@ void Client::Login() {
 
   std::cout << "\n";
 
-  authplain=base64_encode("\0" + input_id + "\0" + input_password);
+  authplain = base64_encode("\0" + input_id + "\0" + input_password);
+
+  if (mailbox) {
+    delete mailbox;
+  }
   
   mailbox = new MailBox(input_id, input_password, authplain);
 
+  std::memset(&input_id[0], 0, input_id.size());
+  std::memset(&input_password[0], 0, input_password.size());
+  std::memset(&authplain[0], 0, authplain.size());
+
+  input_id.clear();
+  input_password.clear();
+  authplain.clear();
 }
 
 void Client::Logout() {
 
   delete mailbox;
   mailbox = nullptr;
-  //std::cout << "로그아웃 완료!";
+  // std::cout << "로그아웃 완료!";
 }
 
 Email Client::EmailInput() {
   std::string date, sendTo, recvFrom, title, body, line;
 
-  std::getchar(); // 버퍼를 비움
+  std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // 버퍼를 비움
   std::cout << "받는 사람의 이메일 주소를 입력하세요: ";
   // std::cin>>sendTo;
   std::getline(std::cin, sendTo);
@@ -70,10 +81,11 @@ Email Client::EmailInput() {
   return email;
 }
 
+
 void Client::ShowOptions() {
 
   if (!mailbox) {
-    std::cout << "로그인이 필요합니다. 로그인을 해주세요." << std::endl;
+    std::cout << "로그인이 필요합니다. 로그인을 해주세요.\n" << std::endl;
     Login();
   }
   {
@@ -87,7 +99,10 @@ void Client::ShowOptions() {
     std::cout << "7. 로그아웃\n";
   }
   int option;
+
+  std::cout << "번호 입력 :";
   std::cin >> option;
+  std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
   switch (option) {
   case 1:

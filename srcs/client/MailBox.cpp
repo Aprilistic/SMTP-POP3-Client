@@ -4,7 +4,7 @@
 #include "client/MailBox.hpp"
 
 MailBox::MailBox(std::string const &ID, std::string const &password,std::string const &authplain)
-    : m_ID(ID), m_password(password)
+    : m_ID(ID)
     , smtp(__SMTP_SERVER_ADDRESS,__SMTP_DEFAULT_PORT,true,ID,authplain)
     , pop3(__POP3_SERVER_ADDRESS, __POP3_DEFAULT_PORT, true, ID, password) {}
 

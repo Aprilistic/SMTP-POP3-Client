@@ -49,3 +49,14 @@ Email::Email(const std::string &rawEmail){
         }
         SetBody(body); // Set the parsed body into the email object
     }
+
+    Email &Email::operator=(const Email &copy) {
+        if (this != &copy) {
+            this->m_date = copy.m_date;
+            this->m_sendTo = copy.m_sendTo;
+            this->m_recvFrom = copy.m_recvFrom;
+            this->m_title = copy.m_title;
+            this->m_body = copy.m_body;
+        }
+        return *this;
+    }

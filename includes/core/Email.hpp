@@ -21,6 +21,8 @@ public:
   void SetTitle(std::string &title) { m_title = title; }
   void SetBody(std::string &body) { m_body = body; }
 
+  Email &operator=(const Email &copy);
+
   std::string &GetDate() { return m_date; }
   std::string &GetSendTo() { return m_sendTo; }
   std::string &GetRecvFrom() { return m_recvFrom; }

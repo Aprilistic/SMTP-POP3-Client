@@ -39,10 +39,10 @@ void SMTP::getResponse(ServerResponse *response) {
 
   if (buffer[0] == '2' || buffer[0] == '3') {
     response->status = true;
-    //buffer.erase(0, 4); // Remove the "2XX"
+    //buffer.erase(0, 4); // Remove the "2XX", "3XX"
   } else {
     response->status = false;
-    //buffer.erase(0, 5); // Remove the "3XX"
+    //buffer.erase(0, 5); // Remove the "5XX"
   }
 
   response->statusMessage = buffer;
@@ -74,7 +74,7 @@ void SMTP::authenticate(std::string const &ID, std::string const &Password) {
 
   // ehlo
   std::stringstream ss;
-  ss << "ehlo " << __SMTP_SERVER_ADDRESS;
+  ss << "ehlo " << __DOMAIN_NAME;
   sendCommand(ss.str());
   getResponse(&response);
   ss.clear();

@@ -47,7 +47,7 @@ struct POP3::ServerResponse {
   bool status; /*< It's true on +OK, false on -ERR */
   std::string statusMessage;
   std::list<std::string> data;
-  std::string rawEmail;
+  std::string rawText;
 };
 
 class POP3::ServerError : public Error {

@@ -55,7 +55,7 @@ void POP3::getMultilineData(ServerResponse *response) {
       {
         buffer.erase(0, 1);
       }
-      response->rawEmail += buffer;
+      response->rawText += buffer;
       response->data.push_back(buffer);
     }
   }

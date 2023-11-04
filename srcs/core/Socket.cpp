@@ -17,8 +17,9 @@
 #include <openssl/ssl.h>
 
 Socket::Socket(const std::string &inputAddress, const std::string &inputPort,
-               bool useTLS)
-    : useTLS(useTLS) {
+               bool useTLS, PROTOCOL protocol)
+    : useTLS(useTLS)
+    , protocol(protocol) {
   address = inputAddress;
   port = inputPort;
   socketFD = -1;
@@ -28,8 +29,9 @@ Socket::Socket(const std::string &inputAddress, const std::string &inputPort,
   open();
 }
 
-Socket::Socket(const std::string &inputAddress, int inputPort, bool useTLS)
-    : useTLS(useTLS) {
+Socket::Socket(const std::string &inputAddress, int inputPort, bool useTLS, PROTOCOL protocol)
+    : useTLS(useTLS)
+    , protocol(protocol) {
   address = inputAddress;
   socketFD = -1;
   std::stringstream portInString;
@@ -205,6 +207,29 @@ void Socket::initTLS() {
 void Socket::completeTLSHandshake() {
   if (ssl == nullptr || ctx == nullptr) {
     throw ConnectionError("TLS is not initialized");
+  }
+
+  std::stringstream ss;
+  if (protocol == PROTOCOL::SMTP){
+    ss << "ehlo " << address << "\r\n";
+    send(socketFD, ss.str().c_str(), (int)ss.str().length(), 0);
+
+    ss.clear();
+    ss.str("");
+    char recvBuffer[1024];
+    int recvBytes = recv(socketFD, recvBuffer, sizeof(recvBuffer), 0);
+    recvBuffer[recvBytes] = '\0';
+
+    ss << "STARTTLS\r\n";
+    send(socketFD, ss.str().c_str(), (int)ss.str().length(), 0);
+
+    recvBytes = recv(socketFD, recvBuffer, sizeof(recvBuffer), 0);
+    recvBuffer[recvBytes] = '\0';
+
+    if (strstr(recvBuffer, "220") == NULL) {
+      ::close(socketFD);
+      throw std::runtime_error("'STARTTLS not supported'");
+    }
   }
 
   SSL_set_fd(ssl, socketFD);

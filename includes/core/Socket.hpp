@@ -7,20 +7,23 @@
 #include <openssl/ssl.h>
 #include <string>
 
+enum class PROTOCOL { SMTP, POP3 };
+
 class Socket {
   int socketFD;
   std::string address;
   std::string port;
   bool useTLS;
+  PROTOCOL protocol;
 
   SSL *ssl;
   SSL_CTX *ctx;
 
 public:
   // Constructors and Destructor
-  Socket(std::string const &inputAddress, int inputPort, bool useTLS = true);
+  Socket(std::string const &inputAddress, int inputPort, bool useTLS = true, PROTOCOL protocol = PROTOCOL::SMTP);
   Socket(std::string const &inputAddress, std::string const &inputPort,
-         bool useTLS = true);
+         bool useTLS = true, PROTOCOL protocol = PROTOCOL::SMTP);
   ~Socket();
 
   // Methods

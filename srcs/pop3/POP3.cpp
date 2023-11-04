@@ -62,7 +62,8 @@ void POP3::getMultilineData(ServerResponse *response) {
 }
 
 void POP3::open(std::string const &server, int port, bool useTLS) {
-  socket = new Socket(server, port, useTLS);
+
+  socket = new Socket(server, port, useTLS, PROTOCOL::POP3);
 
   ServerResponse welcomeMessage;
 

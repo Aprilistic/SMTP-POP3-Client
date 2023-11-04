@@ -30,6 +30,11 @@ SMTP::SMTP(std::string const &server, int port, bool useTLS,
   //authenticate(ID, Password);
 }// 생성자
 
+SMTP::~SMTP(){
+  CloseSMTP();
+
+}
+
 void SMTP::SMTPCycle(Email email) {
   // SMTP 클라이언트 주요 동작 함수
 
@@ -180,11 +185,19 @@ void SMTP::AuthLogin() {
 
 void SMTP::CloseSMTP() {
   // SMTP 연결 및 소켓 통신 종료
-  SSL_shutdown(ssl);
-  SSL_free(ssl);
-  SSL_CTX_free(ctx);
-
-  close(client_fd);
+  if (ssl) {
+    SSL_shutdown(ssl);
+    SSL_free(ssl);
+    ssl = nullptr;
+  }
+  if (ctx) {
+    SSL_CTX_free(ctx);
+    ctx = nullptr;
+  }
+  if (client_fd >= 0) {
+    close(client_fd);
+    client_fd = -1;
+  }
 }
 
 void SMTP::SendMail(Email email) {
@@ -245,28 +258,3 @@ void SMTP::SendMail(Email email) {
 
   return;
 }
-/*
-int main() {
-  try {
-    SMTP smtpServer;
-
-    Email email;
-    std::string tmp;
-
-    tmp = "kjunwoo23@gmail.com";
-    email.SetSendTo(tmp);
-
-    tmp = "sjutest@naver.com";
-    email.SetRecvFrom(tmp);
-
-    tmp = "test is test";
-    email.SetTitle(tmp);
-
-    tmp = "one\r\ntwo\r\nthree\r\n.\r\n";
-    email.SetBody(tmp);
-
-    smtpServer.SMTPCycle(email);
-  } catch (const std::exception &e) {
-    system(e.what());
-  }
-}*/

@@ -8,6 +8,8 @@
 #include <openssl/ssl.h>
 #include <netinet/in.h>
 
+#include "core/Socket.hpp"
+
 class Email;
 
 class SMTP {
@@ -27,9 +29,15 @@ private:
   std::ofstream report;
   char recvBuffer[0x200], sendBuffer[0x200];
   int recvBytes;
+  
+  //Socket *socket;
+  //bool useTLS;
 
 public:
-  SMTP();
+  SMTP(std::string const &server, int port = 25, bool useTLS = true,
+       std::string const &ID = "",
+       std::string const &Password = "");
+  ~SMTP();
 
   void SMTPCycle(Email email);
 

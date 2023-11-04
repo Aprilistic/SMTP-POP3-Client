@@ -10,11 +10,11 @@ Client::~Client() {
 void Client::Login() {
   std::string input_id;
   std::string input_password;
+  std::string authplain;
 
   std::cout << "아이디를 입력하세요: ";
   std::cin >> input_id;
-  std::cin.ignore(std::numeric_limits<std::streamsize>::max(),
-                  '\n'); // 버퍼를 비움
+  std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n'); // 버퍼를 비움
 
   std::cout << "비밀번호를 입력하세요: ";
 
@@ -30,10 +30,10 @@ void Client::Login() {
 
   std::cout << "\n";
 
-  mailbox = new MailBox(input_id, input_password);
+  authplain=base64_encode("\0" + input_id + "\0" + input_password);
+  
+  mailbox = new MailBox(input_id, input_password, authplain);
 
-  // 아이디와 비밀번호를 base64로 인코딩하여 멤버 변수에 저장
-  //"\0" + input_id + "\0" + input_password;
 }
 
 void Client::Logout() {

@@ -16,13 +16,19 @@
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 
+#include "core/Socket.hpp"
 #include "smtp/SMTP.hpp"
 
 #include "core/Email.hpp" // 이메일 정보를 저장하는 클래스 헤더 파일
 
 // g++ SMTP.cpp -lssl -lcrypto
 
-SMTP::SMTP() {} // 생성자
+SMTP::SMTP(std::string const &server, int port, bool useTLS,
+           std::string const &ID, std::string const &Password)
+    /*: socket(nullptr), useTLS(useTLS) */{
+  //open(server, port, useTLS);
+  //authenticate(ID, Password);
+}// 생성자
 
 void SMTP::SMTPCycle(Email email) {
   // SMTP 클라이언트 주요 동작 함수

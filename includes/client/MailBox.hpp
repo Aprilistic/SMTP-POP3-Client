@@ -11,7 +11,7 @@ private:
   std::string m_password;
 
 public:
-	MailBox(std::string const &ID, std::string const &password);
+	MailBox(std::string const &ID, std::string const &password, std::string const &authplain);
   
   SMTP smtp;
   POP3 pop3;

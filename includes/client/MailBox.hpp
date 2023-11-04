@@ -8,7 +8,6 @@
 class MailBox {
 private:
   std::string m_ID;
-  std::string m_password;
 
 public:
 	MailBox(std::string const &ID, std::string const &password, std::string const &authplain);
@@ -24,7 +23,6 @@ public:
   void ListMailbox();
 
   std::string &GetID() { return m_ID; }
-  std::string &GetPassword() { return m_password; }
 };
 
 #endif

@@ -10,8 +10,8 @@
 POP3::POP3(std::string const &server, int port, bool useTLS,
            std::string const &ID, std::string const &Password)
     : socket(nullptr), useTLS(useTLS) {
-  // open(server, port, useTLS);
-  // authenticate(ID, Password);
+  open(server, port, useTLS);
+  authenticate(ID, Password);
 }
 
 //POP3 destructor, closes the connection to the server
@@ -55,7 +55,6 @@ void POP3::getMultilineData(ServerResponse *response) {
       {
         buffer.erase(0, 1);
       }
-      response->rawText += buffer;
       response->data.push_back(buffer);
     }
   }
@@ -91,6 +90,7 @@ void POP3::authenticate(std::string const &ID, std::string const &Password) {
 
   // Check the server's response
   if (!response.status) {
+    close();
     throw ServerError("ID failed", response.statusMessage);
   }
 
@@ -98,6 +98,7 @@ void POP3::authenticate(std::string const &ID, std::string const &Password) {
   getResponse(&response);
 
   if (!response.status) {
+    close();
     throw ServerError("Password failed", response.statusMessage);
   }
 
@@ -127,6 +128,7 @@ void POP3::PrintMessageList() {
        line != response.data.end(); line++) {
     spacePosition = line->find(' ');
     std::cout << "#" << line->substr(0, spacePosition) << std::endl;
+    // std::cout << "#" << *line << std::endl;
   }
 }
 
@@ -148,7 +150,7 @@ void POP3::PrintMessage(int messageId) {
 
   for (std::list<std::string>::iterator line = response.data.begin();
        line != response.data.end(); line++) {
-    std::cout << *line << std::endl;
+    std::cout << ">>" <<*line << "<<" <<std::endl;
   }
 }
 

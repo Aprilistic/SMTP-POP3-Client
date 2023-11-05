@@ -6,6 +6,7 @@
 
 void handle_sigint(int sig) {
   std::cout << "\nCtrl + C를 눌러 프로그램이 종료됩니다.\n";
+  logout
   exit(0);
 }
 
@@ -27,4 +28,6 @@ int main() {
       client.Logout();
     }
   }
+
+  while(1);
 }

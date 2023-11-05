@@ -23,8 +23,8 @@
 SMTP::SMTP(std::string const &server, int port, bool useTLS,
            std::string const &ID, std::string const &Password)
     : socket(nullptr), useTLS(useTLS) {
-  open(server, port, useTLS);
-  authenticate(ID, Password);
+  // open(server, port, useTLS);
+  // authenticate(ID, Password);
 }// 생성자
 SMTP::~SMTP() { close(); }
 

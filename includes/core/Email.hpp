@@ -2,20 +2,26 @@
 #define EMAIL_HPP
 
 #include <string>
+#include <list>
+
 
 class Email {
 private:
   std::string m_date;
   std::string m_sendTo;
   std::string m_recvFrom;
+  std::string m_nickname;
   std::string m_title;
   std::string m_body;
 
 public:
   Email();
-  Email(const std::string &rawEmail);
+  Email(std::list<std::string> &rawEmail);
 
   Email &operator=(const Email &copy);
+
+  void PrintEmail();
+
 
   void SetDate(std::string &date) { m_date = date; }
   void SetSendTo(std::string &sendTo) { m_sendTo = sendTo; }

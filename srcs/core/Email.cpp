@@ -1,63 +1,70 @@
 #include "core/Email.hpp"
+#include "core/Base64.hpp"
 
+#include <iostream>
 #include <sstream>
 
-Email::Email() : m_date(""), m_recvFrom(""), m_sendTo(""), m_title(""), m_body("") {}
+std::string decodeMimeWord(const std::string &input) {
+  if (input.substr(0, 10) == "=?UTF-8?B?" ||
+      input.substr(0, 10) == "=?utf-8?B?") {
+    std::string encoded = input.substr(
+        10, input.length() - 12); // remove the MIME header and footer
+    return base64_decode(encoded);
+  }
+  return input; // return the input if it's not encoded
+}
 
-Email::Email(const std::string &rawEmail){
-	std::istringstream stream(rawEmail);
-        std::string line;
-        std::string currentHeader;
+Email::Email()
+    : m_date(""), m_recvFrom(""), m_sendTo(""), m_title(""), m_body("") {}
 
-        // Temporary variables to hold header data
-        std::string date, sendTo, recvFrom, title;
+Email::Email(std::list<std::string> &rawEmail) {
+  m_body = "";
+  bool isBase64Content = false;
+  for (const auto &line : rawEmail) {
+    if (line.substr(0, 5) == "From:") {
+      m_nickname = decodeMimeWord(line.substr(6));
+      size_t start = line.find('<');
+      size_t end = line.find('>');
 
-        // Parse headers
-        while (std::getline(stream, line) && line != "\r" && line != "\n") {
-            if (line[0] == ' ' || line[0] == '\t') {
-                // Continuation of the previous header
-                continue; // In this simple version, we do not handle multiline headers
-            } else {
-                int colonPos = line.find(':');
-                if (colonPos != std::string::npos) {
-                    std::string headerName = line.substr(0, colonPos);
-                    std::string headerValue = line.substr(colonPos + 2);
-
-                    if (headerName == "Date") {
-                        date = headerValue;
-                    } else if (headerName == "To") {
-                        sendTo = headerValue;
-                    } else if (headerName == "From") {
-                        recvFrom = headerValue;
-                    } else if (headerName == "Subject") {
-                        title = headerValue;
-                    }
-                }
-            }
-        }
-
-        // Set the parsed header data into the email object
-        SetDate(date);
-        SetSendTo(sendTo);
-        SetRecvFrom(recvFrom);
-        SetTitle(title);
-
-        // Parse body
-        std::string body;
-        while (std::getline(stream, line)) {
-            body += line + "\n";
-        }
-        SetBody(body); // Set the parsed body into the email object
+      if (start != std::string::npos && end != std::string::npos &&
+          start < end) {
+        m_recvFrom += line.substr(start + 1, end - start - 1);
+      }
+    } else if (line.substr(0, 3) == "To:") {
+      m_sendTo = line.substr(4);
+    } else if (line.substr(0, 5) == "Date:") {
+      m_date = line.substr(6);
+    } else if (line.substr(0, 8) == "Subject:") {
+      m_title = decodeMimeWord(line.substr(9));
+    } else if (line.substr(0, 27) == "Content-Transfer-Encoding:") {
+      //   isBase64Content = line.find("base64") != std::string::npos;
+      isBase64Content = true;
+    } else if (isBase64Content) {
+      // Assume that the body starts on the next line after
+      // "Content-Transfer-Encoding: base64" and runs until the end of the list.
+      m_body += base64_decode(line);
+      //   isBase64Content = false; // Reset flag after decoding
     }
+  }
+}
 
-    //copy assignment operator
-    Email &Email::operator=(const Email &copy) {
-        if (this != &copy) {
-            this->m_date = copy.m_date;
-            this->m_sendTo = copy.m_sendTo;
-            this->m_recvFrom = copy.m_recvFrom;
-            this->m_title = copy.m_title;
-            this->m_body = copy.m_body;
-        }
-        return *this;
-    }
+void Email::PrintEmail() {
+  std::cout << "Date: " << m_date << std::endl;
+  std::cout << "From: " << m_nickname << " " << m_recvFrom << std::endl;
+  std::cout << "To: " << m_sendTo << std::endl;
+  std::cout << "Subject: " << m_title << std::endl;
+  std::cout << "Body: " << m_body << std::endl;
+}
+
+// copy assignment operator
+Email &Email::operator=(const Email &copy) {
+  if (this != &copy) {
+    this->m_date = copy.m_date;
+    this->m_sendTo = copy.m_sendTo;
+    this->m_nickname = copy.m_nickname;
+    this->m_recvFrom = copy.m_recvFrom;
+    this->m_title = copy.m_title;
+    this->m_body = copy.m_body;
+  }
+  return *this;
+}

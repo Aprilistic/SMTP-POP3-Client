@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <list>
 
 //POP3 constructor, opens a connection to the server and authenticates the user
 POP3::POP3(std::string const &server, int port, bool useTLS,
@@ -55,7 +56,6 @@ void POP3::getMultilineData(ServerResponse *response) {
       {
         buffer.erase(0, 1);
       }
-      response->rawText += buffer;
       response->data.push_back(buffer);
     }
   }
@@ -131,10 +131,15 @@ void POP3::PrintMessageList() {
 }
 
 void POP3::PrintMessage(int messageId) {
+  Email email = DownloadMessage(messageId);
+  email.PrintEmail();
+}
+
+Email POP3::DownloadMessage(const int messageID) {
   ServerResponse response;
 
   std::stringstream command;
-  command << "RETR " << messageId;
+  command << "RETR " << messageID;
 
   sendCommand(command.str());
 
@@ -146,13 +151,10 @@ void POP3::PrintMessage(int messageId) {
 
   getMultilineData(&response);
 
-  for (std::list<std::string>::iterator line = response.data.begin();
-       line != response.data.end(); line++) {
-    std::cout << *line << std::endl;
-  }
-}
+  Email email(response.data);
 
-Email POP3::DownloadMessage(const int messageID) { return Email(); }
+  return email;
+}
 
 void POP3::DeleteMessage(int messageId) {
   ServerResponse response;

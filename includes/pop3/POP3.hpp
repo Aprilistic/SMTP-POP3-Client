@@ -17,6 +17,7 @@ public:
        std::string const &Password = "");
   ~POP3();
 
+  void ConnectPOP3();
   Email DownloadMessage(const int messageID);
   void PrintMessageList();
   void PrintMessage(int messageId);
@@ -40,6 +41,10 @@ private:
 private:
   Socket *socket;
   bool useTLS;
+  std::string server;
+  int port;
+  std::string ID;
+  std::string Password;
 };
 
 struct POP3::ServerResponse {

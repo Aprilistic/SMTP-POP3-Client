@@ -15,30 +15,51 @@ std::string decodeMimeWord(const std::string &input) {
 }
 
 Email::Email()
-    : m_date(""), m_recvFrom(""), m_sendTo(""), m_title(""), m_body("") {}
+    : m_date(""), m_recvFrom(""), m_nickname(""), m_sendTo(""), m_title(""), m_body("") {}
 
 Email::Email(std::list<std::string> &rawEmail) {
   m_body = "";
   bool isBase64Content = false;
   for (const auto &line : rawEmail) {
     if (line.substr(0, 5) == "From:") {
-      m_nickname = decodeMimeWord(line.substr(6));
-      size_t start = line.find('<');
-      size_t end = line.find('>');
 
-      if (start != std::string::npos && end != std::string::npos &&
-          start < end) {
-        m_recvFrom += line.substr(start + 1, end - start - 1);
+      if (line[5] == ' ') {
+        m_nickname = decodeMimeWord(line.substr(6));
+        size_t start = line.find('<');
+        size_t end = line.find('>');
+        if (start != std::string::npos && end != std::string::npos &&
+            start < end) {
+          m_recvFrom = line.substr(start + 1, end - start - 1);
+        } else{
+          m_recvFrom = line.substr(6);
+        }
+      } else {
+        m_recvFrom = line.substr(5);
       }
     } else if (line.substr(0, 3) == "To:") {
-      m_sendTo = line.substr(4);
+      if (line[3] == ' ') {
+        m_sendTo = line.substr(4);
+      } else {
+        m_sendTo = line.substr(3);
+      }
+      m_sendTo = m_sendTo.substr(1, m_sendTo.length() - 2);
+      // m_sendTo = line.substr(4);
     } else if (line.substr(0, 5) == "Date:") {
-      m_date = line.substr(6);
+      if (line[5] == ' ') {
+        m_date = line.substr(6);
+      } else {
+        m_date = line.substr(5);
+      }
+      // m_date = line.substr(6);
     } else if (line.substr(0, 8) == "Subject:") {
-      m_title = decodeMimeWord(line.substr(9));
+      if (line[8] == ' ') {
+        m_title = decodeMimeWord(line.substr(9));
+      } else {
+        m_title = decodeMimeWord(line.substr(8));
+      }
+      // m_title = decodeMimeWord(line.substr(9));
     } else if (line.substr(0, 27) == "Content-Transfer-Encoding:") {
-      //   isBase64Content = line.find("base64") != std::string::npos;
-      isBase64Content = true;
+      isBase64Content = line.find("base64") != std::string::npos;
     } else if (isBase64Content) {
       // Assume that the body starts on the next line after
       // "Content-Transfer-Encoding: base64" and runs until the end of the list.
@@ -53,7 +74,6 @@ void Email::PrintEmail() {
   std::cout << "From: " << m_nickname << " " << m_recvFrom << std::endl;
   std::cout << "To: " << m_sendTo << std::endl;
   std::cout << "Subject: " << m_title << std::endl;
-  std::cout << "Body: " << m_body << std::endl;
 }
 
 // copy assignment operator

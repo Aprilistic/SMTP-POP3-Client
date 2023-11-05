@@ -17,10 +17,9 @@ public:
   void SendMail(Email email);
   void ReadMail(int id);
   Email RecvMail(int id);
-  bool DeleteMail(int id);
-  bool ForwardMail(int id, std::string &sendTo);
   void ReplyMail(int id, std::string body);
   void ListMailbox();
+  void ResetMailbox();
 
   std::string &GetID() { return m_ID; }
 };

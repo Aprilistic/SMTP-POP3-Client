@@ -26,16 +26,11 @@ private:
   SSL_CTX *ctx;
   SSL *ssl;
 
-  std::ofstream report;
   char recvBuffer[0x200], sendBuffer[0x200];
   int recvBytes;
   
-  //Socket *socket;
-  //bool useTLS;
-
 public:
-  SMTP(std::string const &server, int port = 25,
-       std::string const &Password = "");
+  SMTP(std::string const &server, int port, std::string const &authplain);
   ~SMTP();
 
   void SMTPCycle(Email email);

@@ -38,10 +38,6 @@ void Client::Login() {
   
   mailbox = new MailBox(input_id, input_password, authplain);
 
-  std::memset(&input_id[0], 0, input_id.size());
-  std::memset(&input_password[0], 0, input_password.size());
-  std::memset(&authplain[0], 0, authplain.size());
-
   input_id.clear();
   input_password.clear();
   authplain.clear();
@@ -63,7 +59,7 @@ Email Client::EmailInput() {
   std::getline(std::cin, sendTo);
   std::cout << "제목을 입력하세요: ";
   std::getline(std::cin, title);
-  std::cout << "본문을 입력하세요 (입력을 완료하려면 '.'을 입력하세요): ";
+  std::cout << "본문을 입력하세요 (입력을 완료하려면 '.'을 입력하세요):\n";
 
   while (std::getline(std::cin, line)) {
     body += line + "\r\n";
@@ -97,12 +93,13 @@ void Client::ShowOptions() {
     std::cout << "5. 이메일 답장\n";
     std::cout << "6. 이메일 삭제\n";
     std::cout << "7. 로그아웃\n";
+    std::cout << "8. 종료\n";
   }
   int option;
 
   std::cout << "번호 입력 :";
   std::cin >> option;
-  std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+  // std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
   switch (option) {
   case 1:
@@ -169,6 +166,12 @@ void Client::ShowOptions() {
   case 7:
     // 로그아웃
     Logout();
+    break;
+  case 8:
+    // 종료
+    Logout();
+    std::cout << "종료합니다.\n";
+    exit(0);
     break;
   default:
     std::cout << "잘못된 입력입니다. 다시 시도해주세요." << std::endl;

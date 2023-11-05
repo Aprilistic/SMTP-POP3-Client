@@ -26,7 +26,6 @@ private:
   SSL_CTX *ctx;
   SSL *ssl;
 
-  std::ofstream report;
   char recvBuffer[0x200], sendBuffer[0x200];
   int recvBytes;
   

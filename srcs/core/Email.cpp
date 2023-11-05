@@ -21,7 +21,6 @@ Email::Email(std::list<std::string> &rawEmail) {
   m_body = "";
   bool isBase64Content = false;
   for (const auto &line : rawEmail) {
-		std::cout << "line: " << line << std::endl;
     if (line.substr(0, 5) == "From:") {
 
       if (line[5] == ' ') {
@@ -43,6 +42,7 @@ Email::Email(std::list<std::string> &rawEmail) {
       } else {
         m_sendTo = line.substr(3);
       }
+      m_sendTo = m_sendTo.substr(1, m_sendTo.length() - 2);
       // m_sendTo = line.substr(4);
     } else if (line.substr(0, 5) == "Date:") {
       if (line[5] == ' ') {

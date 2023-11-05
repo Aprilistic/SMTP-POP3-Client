@@ -19,6 +19,7 @@ public:
   Email RecvMail(int id);
   void ReplyMail(int id, std::string body);
   void ListMailbox();
+  void ResetMailbox();
 
   std::string &GetID() { return m_ID; }
 };

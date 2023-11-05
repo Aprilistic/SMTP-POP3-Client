@@ -156,7 +156,7 @@ Email POP3::DownloadMessage(const int messageID) {
   getMultilineData(&response);
 
   Email email(response.data);
-  DeleteMessage(messageID);
+  // DeleteMessage(messageID);
 
   return email;
 }

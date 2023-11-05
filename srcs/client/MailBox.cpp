@@ -23,7 +23,8 @@ void MailBox::ReplyMail(int id, std::string body) {
   replyEmail.SetRecvFrom(email.GetSendTo());
 
   std::string rw = "RW: ";
-  rw += replyEmail.GetTitle();
+  rw += email.GetTitle();
+
   replyEmail.SetTitle(rw);
   replyEmail.SetBody(body);
 
@@ -31,5 +32,7 @@ void MailBox::ReplyMail(int id, std::string body) {
 }
 
 void MailBox::ListMailbox() { pop3.PrintMessageList(); }
+
+void MailBox::ResetMailbox() { pop3.ResetMailbox(); }
 
 void MailBox::ReadMail(int id) { pop3.PrintMessage(id); }

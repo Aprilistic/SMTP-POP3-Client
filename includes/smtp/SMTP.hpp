@@ -15,11 +15,11 @@ class Email;
 class SMTP {
 private:
   // 클라이언트로부터 넘겨받을 것
-  const std::string authID = "AHNqdXRlc3RAbmF2ZXIuY29tAHNqdXRlc3RA";
+  std::string authID;
 
-  const std::string dnsAddress = "naver.com";
-  const std::string smtpServerAddress = "smtp.naver.com";
-  const int smtpPort = 25;
+  std::string dnsAddress;
+  std::string smtpServerAddress;
+  int smtpPort;
 
   struct sockaddr_in serv_addr;
   int status, valread, client_fd;
@@ -34,8 +34,7 @@ private:
   //bool useTLS;
 
 public:
-  SMTP(std::string const &server, int port = 25, bool useTLS = true,
-       std::string const &ID = "",
+  SMTP(std::string const &server, int port = 25,
        std::string const &Password = "");
   ~SMTP();
 

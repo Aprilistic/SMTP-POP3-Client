@@ -21,13 +21,16 @@
 
 #include "core/Email.hpp" // 이메일 정보를 저장하는 클래스 헤더 파일
 
+#include "core/Config.hpp"
+
 // g++ SMTP.cpp -lssl -lcrypto
 
-SMTP::SMTP(std::string const &server, int port, bool useTLS,
-           std::string const &ID, std::string const &Password)
-    /*: socket(nullptr), useTLS(useTLS) */{
-  //open(server, port, useTLS);
-  //authenticate(ID, Password);
+SMTP::SMTP(std::string const &server, int port, std::string const &authPlain){
+    dnsAddress = __DOMAIN_NAME;
+    smtpServerAddress = server;
+    smtpPort = port;
+    authID = authPlain;    
+    std::cout << authID << "\n";
 }// 생성자
 
 SMTP::~SMTP(){

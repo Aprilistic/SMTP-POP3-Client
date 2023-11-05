@@ -15,7 +15,7 @@ std::string decodeMimeWord(const std::string &input) {
 }
 
 Email::Email()
-    : m_date(""), m_recvFrom(""), m_sendTo(""), m_title(""), m_body("") {}
+    : m_date(""), m_recvFrom(""), m_nickname(""), m_sendTo(""), m_title(""), m_body("") {}
 
 Email::Email(std::list<std::string> &rawEmail) {
   m_body = "";
@@ -37,8 +37,7 @@ Email::Email(std::list<std::string> &rawEmail) {
     } else if (line.substr(0, 8) == "Subject:") {
       m_title = decodeMimeWord(line.substr(9));
     } else if (line.substr(0, 27) == "Content-Transfer-Encoding:") {
-      //   isBase64Content = line.find("base64") != std::string::npos;
-      isBase64Content = true;
+      isBase64Content = line.find("base64") != std::string::npos;
     } else if (isBase64Content) {
       // Assume that the body starts on the next line after
       // "Content-Transfer-Encoding: base64" and runs until the end of the list.

@@ -21,9 +21,9 @@ class Socket {
 
 public:
   // Constructors and Destructor
-  Socket(std::string const &inputAddress, int inputPort, bool useTLS = true, PROTOCOL protocol = PROTOCOL::SMTP);
+  Socket(std::string const &inputAddress, int inputPort, bool useTLS = true, PROTOCOL protocol);
   Socket(std::string const &inputAddress, std::string const &inputPort,
-         bool useTLS = true, PROTOCOL protocol = PROTOCOL::SMTP);
+         bool useTLS = true, PROTOCOL protocol);
   ~Socket();
 
   // Methods

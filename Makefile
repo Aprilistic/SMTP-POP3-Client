@@ -51,9 +51,6 @@ re :
 	make fclean
 	make all -j4
 
-leaks :
-	valgrind --leak-check=full --show-leak-kinds=all --log-file=leaks.txt $(PWD)/$(NAME) $(PWD)/configs/example.conf
-
-.PHONY : all clean fclean re leaks
+.PHONY : all clean fclean re
 
 -include $(DEPS)

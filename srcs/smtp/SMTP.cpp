@@ -23,8 +23,6 @@
 
 #include "core/Config.hpp"
 
-// g++ SMTP.cpp -lssl -lcrypto
-
 SMTP::SMTP(std::string const &server, int port, std::string const &authplain)
 {
     dnsAddress = __DOMAIN_NAME;
@@ -57,9 +55,6 @@ void SMTP::ConnectSMTP() {
   if ((client_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
     throw std::runtime_error("Socket Failed");
   }
-  // AF_INET은 인터넷 프로토콜을 의미
-  // client_fd는 왜 int형인가?	-client_fd는 소켓 그 자체를 담는 변수가 아닌
-  // 파일 디스크립터로, 소켓의 연결을 나타내고 관리하는 변수이기 때문
 
   // serv_addr 초기화
   memset(&serv_addr, 0x00, sizeof(serv_addr));

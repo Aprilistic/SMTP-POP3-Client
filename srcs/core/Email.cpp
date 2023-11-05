@@ -74,7 +74,6 @@ void Email::PrintEmail() {
   std::cout << "From: " << m_nickname << " " << m_recvFrom << std::endl;
   std::cout << "To: " << m_sendTo << std::endl;
   std::cout << "Subject: " << m_title << std::endl;
-  std::cout << "Body: " << m_body << std::endl;
 }
 
 // copy assignment operator

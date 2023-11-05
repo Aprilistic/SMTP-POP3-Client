@@ -9,7 +9,7 @@ MailBox::MailBox(std::string const &ID, std::string const &password,
        smtp(__SMTP_SERVER_ADDRESS, __SMTP_DEFAULT_PORT, authplain),
       pop3(__POP3_SERVER_ADDRESS, __POP3_DEFAULT_PORT, true, ID, password) {}
 
-void MailBox::SendMail(Email email) { smtp.SMTPCycle(email); }
+void MailBox::SendMail(Email email) { smtp.SendMail(email); }
 
 Email MailBox::RecvMail(int id) { return (pop3.DownloadMessage(id)); }
 
@@ -28,7 +28,7 @@ void MailBox::ReplyMail(int id, std::string body) {
   replyEmail.SetTitle(rw);
   replyEmail.SetBody(body);
 
-  smtp.SMTPCycle(replyEmail);
+  smtp.SendMail(replyEmail);
 }
 
 void MailBox::ListMailbox() { pop3.PrintMessageList(); }

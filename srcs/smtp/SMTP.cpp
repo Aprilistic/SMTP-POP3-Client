@@ -2,8 +2,8 @@
 #include <cstdlib>
 #include <string>
 
-#include <fstream>
 #include <iostream>
+#include <sstream>
 
 #include <arpa/inet.h>
 #include <stdio.h>
@@ -13,13 +13,11 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-#include <openssl/err.h>
-#include <openssl/ssl.h>
-
-#include "core/Socket.hpp"
 #include "smtp/SMTP.hpp"
+#include "core/Socket.hpp"
 
-#include "core/Email.hpp" // 이메일 정보를 저장하는 클래스 헤더 파일
+#include "core/Email.hpp"
+#include "core/Config.hpp"
 
 #include "core/Config.hpp"
 
@@ -30,6 +28,7 @@ SMTP::SMTP(std::string const &server, int port, std::string const &authplain)
     smtpPort = port;
     authID = authplain;
 }// 생성자
+SMTP::~SMTP() { close(); }
 
 SMTP::~SMTP(){
   CloseSMTP();
@@ -38,17 +37,13 @@ SMTP::~SMTP(){
 void SMTP::SMTPCycle(Email email) {
   // SMTP 클라이언트 주요 동작 함수
 
-  ConnectSMTP();  // 서버 연결
-  StartTlsSMTP(); // TLS 보안 연결
-  AuthLogin();    // 이메일 아이디, 비밀번호 인증
-
-  SendMail(email); // 이메일 전송
-
-  CloseSMTP(); // 연결 종료
+void SMTP::sendCommand(std::string const &command) {
+  socket->write(command + "\r\n");
 }
 
-void SMTP::ConnectSMTP() {
-  // SMTP 서버에 연결
+void SMTP::getResponse(ServerResponse *response) {
+  std::string buffer;
+  socket->readLine(&buffer);
 
   hostent *host;
   // 스트림 방식(TCP)의 소켓을 생성
@@ -85,12 +80,36 @@ void SMTP::ConnectSMTP() {
   return;
 }
 
-void SMTP::StartTlsSMTP() {
-  // TLS 연결 설정 및 SSL 핸드셰이크 수행
+void SMTP::open(std::string const &server, int port, bool useTLS) {
+  socket = new Socket(server, port, useTLS, PROTOCOL::SMTP);
+
+  ServerResponse welcomeMessage;
+
+  getResponse(&welcomeMessage);
+
+  if (!welcomeMessage.status) {
+    throw ServerError("Conection refused", welcomeMessage.statusMessage);
+  }
+}
+
+void SMTP::close() {
+  if (socket != NULL) {
+    sendCommand("quit");
+  }
+  delete socket;
+  socket = nullptr;
+}
+
+void SMTP::authenticate(std::string const &ID, std::string const &Password) {
+  ServerResponse response;
 
   // ehlo
-  sprintf(sendBuffer, "ehlo %s\r\n", dnsAddress.c_str());
-  send(client_fd, sendBuffer, (int)strlen(sendBuffer), 0);
+  std::stringstream ss;
+  ss << "ehlo " << __DOMAIN_NAME;
+  sendCommand(ss.str());
+  getResponse(&response);
+  ss.clear();
+  ss.str("");
 
   // 250-smtp.naver.com Pleased to meet you
   recvBytes = recv(client_fd, recvBuffer, sizeof(recvBuffer), 0);
@@ -110,12 +129,8 @@ void SMTP::StartTlsSMTP() {
     throw std::runtime_error("STARTTLS not supported");
   }
 
-  SSL_library_init(); // OpenSSL 라이브러리 초기화
-  OpenSSL_add_all_algorithms(); // OpenSSL 라이브러리에서 사용할 수 있는 모든
-                                // 암호화 알고리즘을 로드
-  SSL_load_error_strings(); // OpenSSL 내부 오류 메시지를 로드, 오류 메시지를
-                            // 인간이 이해하기 쉬운 형태로 출력할 수 있도록
-                            // 도와줌
+  sendCommand("AUTH PLAIN:");
+  getResponse(&response);
 
   // SSL 컨텍스트 생성
   ctx = SSL_CTX_new(SSLv23_client_method());
@@ -143,12 +158,7 @@ void SMTP::StartTlsSMTP() {
   }
 }
 
-void SMTP::AuthLogin() {
-  // SMTP 서버에 인증
 
-  // ehlo
-  sprintf(sendBuffer, "ehlo %s\r\n", dnsAddress.c_str());
-  SSL_write(ssl, sendBuffer, (int)strlen(sendBuffer));
 
   // 250-smtp.naver.com Pleased to meet you
   memset(recvBuffer, 0, sizeof(recvBuffer));
@@ -200,8 +210,9 @@ void SMTP::SendMail(Email email) {
   // 메일 전송 요청 시작
 
   // MAIL FROM:<전송자 이메일>
-  sprintf(sendBuffer, "MAIL FROM:<%s>\r\n", email.GetRecvFrom().c_str());
-  SSL_write(ssl, sendBuffer, (int)strlen(sendBuffer));
+  ss << "MAIL FROM:<" << email.GetRecvFrom() << ">";
+  sendCommand(ss.str());
+  ss.str("");
 
   // 250 2.1.0 OK
   memset(recvBuffer, 0, sizeof(recvBuffer));
@@ -212,9 +223,10 @@ void SMTP::SendMail(Email email) {
   }
 
   // RCPT TO:<수신자 이메일>
-  sprintf(sendBuffer, "RCPT TO:<%s>\r\n", email.GetSendTo().c_str());
-  SSL_write(ssl, sendBuffer, (int)strlen(sendBuffer));
-
+  ss << "RCPT TO:<" << email.GetSendTo() << ">";
+  sendCommand(ss.str());
+  ss.str("");
+  
   // 250 2.1.5 OK
   memset(recvBuffer, 0, sizeof(recvBuffer));
   SSL_read(ssl, recvBuffer, sizeof(recvBuffer));
@@ -224,18 +236,21 @@ void SMTP::SendMail(Email email) {
   }
 
   // DATA
-  sprintf(sendBuffer, "DATA\r\n");
-  SSL_write(ssl, sendBuffer, (int)strlen(sendBuffer));
+  sendCommand("DATA");
 
   // 354 Go ahead
-  memset(recvBuffer, 0, sizeof(recvBuffer));
-  SSL_read(ssl, recvBuffer, sizeof(recvBuffer));
+  getResponse(&response);
+  if (!response.status) {
+    throw ServerError("Wrong Command", response.statusMessage);
+  }
 
-  // 메일 본문 (To, From, Subject, Body)
-  sprintf(sendBuffer, "To:%s\nFrom:%s\nSubject:%s\r\n\r\n%s\r\n.\r\n",
-          email.GetSendTo().c_str(), email.GetRecvFrom().c_str(),
-          email.GetTitle().c_str(), email.GetBody().c_str());
-  SSL_write(ssl, sendBuffer, (int)strlen(sendBuffer));
+  // 메일 본문 (To, From, Subject, Body)  
+  ss << "To:" << email.GetSendTo() << "\n";
+  ss << "From:" << email.GetRecvFrom() << "\n";
+  ss << "Subject:" << email.GetTitle() << "\r\n\r\n";
+  ss << "To:" << email.GetBody() << "\r\n.\r\n";
+  sendCommand(ss.str());
+  ss.str("");
 
   // 250 2.0.0 OK
   memset(recvBuffer, 0, sizeof(recvBuffer));

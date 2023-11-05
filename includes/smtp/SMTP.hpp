@@ -1,8 +1,9 @@
 #ifndef SMTP_HPP
 #define SMTP_HPP
 
+#include <list>
 #include <string>
-#include <fstream>
+//#include <fstream>
 
 #include <openssl/err.h>
 #include <openssl/ssl.h>
@@ -33,15 +34,34 @@ public:
   SMTP(std::string const &server, int port, std::string const &authplain);
   ~SMTP();
 
-  void SMTPCycle(Email email);
-
-  void ConnectSMTP();
-  void StartTlsSMTP();
-  void AuthLogin();
-
   void SendMail(Email email);
 
-  void CloseSMTP();
+  class ServerError;
+
+private:  
+  struct ServerResponse;
+  void sendCommand(std::string const &command);
+  void getResponse(ServerResponse *response);
+
+  void open(std::string const &server, int port, bool useTLS);
+  void authenticate(std::string const &ID,
+                    std::string const &Password);
+  void close();
+};
+
+struct SMTP::ServerResponse {
+
+  bool status; /*< It's true on 2XX, false on 3XX */
+  std::string statusMessage;
+  std::list<std::string> data;
+};
+
+class SMTP::ServerError : public Error {
+public:
+  ServerError(std::string const &what, std::string const &serverStatus) {
+    problem = what;
+    reason = serverStatus;
+  }
 };
 
 #endif

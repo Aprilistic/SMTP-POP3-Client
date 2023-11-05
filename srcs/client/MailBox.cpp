@@ -20,7 +20,7 @@ void MailBox::ReplyMail(int id, std::string body) {
   Email replyEmail;
 
   replyEmail.SetSendTo(email.GetRecvFrom());
-  replyEmail.SetRecvFrom(m_ID);
+  replyEmail.SetRecvFrom(email.GetSendTo());
 
   std::string rw = "RW: ";
   rw += email.GetTitle();

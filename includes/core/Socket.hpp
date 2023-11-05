@@ -41,9 +41,11 @@ private:
   void close();
   bool readCharacter(char *buffer);
   bool isReadyToRead();
-  void initTLS();
+
+  void connectToServer();
+  void connectToServerTLS();
+  void startTLS();
   void cleanupTLS();
-  void completeTLSHandshake();
 };
 
 class Socket::ConnectionError : public Error {

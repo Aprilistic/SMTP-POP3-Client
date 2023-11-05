@@ -52,13 +52,13 @@ void SMTP::getResponse(ServerResponse *response) {
 void SMTP::open(std::string const &server, int port, bool useTLS) {
   socket = new Socket(server, port, useTLS, PROTOCOL::SMTP);
 
-  ServerResponse welcomeMessage;
+  // ServerResponse welcomeMessage;
 
-  getResponse(&welcomeMessage);
+  // getResponse(&welcomeMessage);
 
-  if (!welcomeMessage.status) {
-    throw ServerError("Conection refused", welcomeMessage.statusMessage);
-  }
+  // if (!welcomeMessage.status) {
+  //   throw ServerError("Conection refused", welcomeMessage.statusMessage);
+  // }
 }
 
 void SMTP::close() {

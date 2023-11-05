@@ -22,10 +22,7 @@ Socket::Socket(const std::string &inputAddress, const std::string &inputPort,
   address = inputAddress;
   port = inputPort;
   socketFD = -1;
-  if (useTLS) {
-    initTLS();
-  }
-  
+
   open();
 }
 
@@ -37,60 +34,22 @@ Socket::Socket(const std::string &inputAddress, int inputPort, bool useTLS,
   std::stringstream portInString;
   portInString << inputPort;
   port = portInString.str();
-  if (useTLS) {
-    initTLS();
-  }
+
   open();
-}
-
-void Socket::open() {
-  struct addrinfo hints;
-  struct addrinfo *result, *resultPointer;
-
-  memset(&hints, 0, sizeof(struct addrinfo));
-  hints.ai_family = AF_INET;
-  hints.ai_socktype = SOCK_STREAM;
-  hints.ai_flags = 0;
-  hints.ai_protocol = 0;
-
-  int getaddrinfoReturnCode =
-      getaddrinfo(address.c_str(), port.c_str(), &hints, &result);
-  if (getaddrinfoReturnCode != 0) {
-    throw ConnectionError(gai_strerror(getaddrinfoReturnCode));
-  }
-
-  for (resultPointer = result; resultPointer != nullptr;
-       resultPointer = resultPointer->ai_next) {
-    socketFD = socket(resultPointer->ai_family, resultPointer->ai_socktype,
-                      resultPointer->ai_protocol);
-    if (socketFD == -1) {
-      continue;
-    }
-
-    if (connect(socketFD, resultPointer->ai_addr, resultPointer->ai_addrlen) !=
-        -1) {
-      break;
-    }
-
-    ::close(socketFD);
-    socketFD = -1;
-  }
-
-  freeaddrinfo(result);
-
-  if (resultPointer == nullptr) {
-    throw ConnectionError("Cannot establish connection to the server");
-  }
-
-  if (useTLS) {
-    completeTLSHandshake();
-  }
 }
 
 Socket::~Socket() {
   cleanupTLS();
   if (socketFD > 0) {
     close();
+  }
+}
+
+void Socket::open() {
+  connectToServer();
+
+  if (useTLS) {
+    connectToServerTLS(); 
   }
 }
 
@@ -184,11 +143,108 @@ size_t Socket::readLine(std::string *line) {
   return bytesRead;
 }
 
-void Socket::initTLS() {
-  // SSL_library_init();	// OpenSSL 라이브러리 초기화
-  // OpenSSL_add_all_algorithms();	//OpenSSL 라이브러리에서 사용할 수 있는 모든 암호화 알고리즘을 로드
-  // SSL_load_error_strings();	// OpenSSL 내부 오류 메시지를 로드, 오류 메시지를 인간이 이해하기 쉬운 형태로 출력할 수 있도록 도와줌
+void Socket::startTLS() {
+    useTLS = false;
 
+    char recvBuffer[1024];
+    size_t recvBytes;
+    recvBytes = read(&recvBuffer[0], sizeof(recvBuffer));
+    recvBuffer[recvBytes] = '\0';
+
+    std::cout << "recvBuffer0: " << recvBuffer << std::endl;
+
+    std::stringstream command;
+    command << "EHLO " << "sejong.ac.kr" << "\r\n";
+
+    write(command.str());
+    recvBytes = read(&recvBuffer[0], sizeof(recvBuffer));
+    recvBuffer[recvBytes] = '\0';
+
+    std::cout << "recvBuffer0: " << recvBuffer << std::endl;
+
+    write(command.str());
+    command.clear();
+    command.str("");
+    recvBytes = read(&recvBuffer[0], sizeof(recvBuffer));
+    recvBuffer[recvBytes] = '\0';
+
+    std::cout << "recvBuffer1: " << recvBuffer << std::endl;
+
+    command << "STARTTLS" << "\r\n";
+
+    write(command.str());
+    command.clear();
+    command.str("");
+    recvBytes = read(&recvBuffer[0], sizeof(recvBuffer));
+    recvBuffer[recvBytes] = '\0';
+
+    // std::cout << "recvBuffer2: " << recvBuffer << std::endl;
+    // if (strstr(recvBuffer, "220") == NULL) {
+    //   ::close(socketFD);
+    //   throw std::runtime_error("'STARTTLS not supported'");
+    // }
+
+    useTLS = true;
+}
+
+void Socket::cleanupTLS() {
+  if (ssl) {
+    SSL_shutdown(ssl);
+    SSL_free(ssl);
+    ssl = nullptr;
+  }
+
+  if (ctx) {
+    SSL_CTX_free(ctx);
+    ctx = nullptr;
+  }
+}
+
+void Socket::connectToServer() {
+  struct addrinfo hints;
+  struct addrinfo *result, *resultPointer;
+
+  memset(&hints, 0, sizeof(struct addrinfo));
+  hints.ai_family = AF_INET;
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_flags = 0;
+  hints.ai_protocol = 0;
+
+  int getaddrinfoReturnCode =
+      getaddrinfo(address.c_str(), port.c_str(), &hints, &result);
+  if (getaddrinfoReturnCode != 0) {
+    throw ConnectionError(gai_strerror(getaddrinfoReturnCode));
+  }
+
+  for (resultPointer = result; resultPointer != nullptr;
+       resultPointer = resultPointer->ai_next) {
+    socketFD = socket(resultPointer->ai_family, resultPointer->ai_socktype,
+                      resultPointer->ai_protocol);
+    if (socketFD == -1) {
+      continue;
+    }
+
+    if (connect(socketFD, resultPointer->ai_addr, resultPointer->ai_addrlen) !=
+        -1) {
+      break;
+    }
+
+    ::close(socketFD);
+    socketFD = -1;
+  }
+
+  freeaddrinfo(result);
+
+  if (resultPointer == nullptr) {
+    throw ConnectionError("Cannot establish connection to the server");
+  }
+}
+
+void Socket::connectToServerTLS() {
+  SSL_library_init();
+  OpenSSL_add_all_algorithms();
+  SSL_load_error_strings();
+  
   const SSL_METHOD *method = TLS_client_method();
   ctx = SSL_CTX_new(method);
   if (ctx == nullptr) {
@@ -202,62 +258,14 @@ void Socket::initTLS() {
     SSL_CTX_free(ctx);
     throw ConnectionError("Failed to create SSL structure");
   }
-}
 
-void Socket::completeTLSHandshake() {
-  if (ssl == nullptr || ctx == nullptr) {
-    throw ConnectionError("TLS is not initialized");
-  }
-
-  std::stringstream ss;
   if (protocol == PROTOCOL::SMTP) {
-    ss << "ehlo "
-       << "naver.com"
-       << "\r\n";
-    send(socketFD, ss.str().c_str(), (int)ss.str().length(), 0);
-
-    ss.clear();
-    ss.str("");
-    char recvBuffer[1024];
-    int recvBytes = recv(socketFD, recvBuffer, sizeof(recvBuffer), 0);
-    recvBuffer[recvBytes] = '\0';
-
-    ss << "STARTTLS\r\n";
-    send(socketFD, ss.str().c_str(), (int)ss.str().length(), 0);
-
-   
-
-    recvBuffer[recvBytes] = '\0';
-
-    std::cout << "recvBuffer: " << recvBuffer << std::endl;
-    if (strstr(recvBuffer, "220") == NULL) {
-      ::close(socketFD);
-      throw std::runtime_error("'STARTTLS not supported'");
-    }
+    startTLS();
   }
-
-  SSL_library_init();	// OpenSSL 라이브러리 초기화
-  OpenSSL_add_all_algorithms();	//OpenSSL 라이브러리에서 사용할 수 있는 모든 암호화 알고리즘을 로드
-  SSL_load_error_strings();	// OpenSSL 내부 오류 메시지를 로드, 오류 메시지를 인간이 이해하기 쉬운 형태로 출력할 수 있도록 도와줌
-  
-  initTLS();
 
   SSL_set_fd(ssl, socketFD);
   if (SSL_connect(ssl) <= 0) {
     ERR_print_errors_fp(stderr);
     throw ConnectionError("Failed to establish TLS connection");
-  }
-}
-
-void Socket::cleanupTLS() {
-  if (ssl) {
-    SSL_shutdown(ssl);
-    SSL_free(ssl);
-    ssl = nullptr;
-  }
-
-  if (ctx) {
-    SSL_CTX_free(ctx);
-    ctx = nullptr;
   }
 }

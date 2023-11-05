@@ -102,7 +102,7 @@ void Client::ShowOptions() {
 
   std::cout << "번호 입력 :";
   std::cin >> option;
-  std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+  // std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
   switch (option) {
   case 1:

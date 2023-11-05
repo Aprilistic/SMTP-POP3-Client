@@ -48,6 +48,7 @@ void Client::Login() {
   }
 
   mailbox = new MailBox(input_id, input_password, authplain_encoded);
+  mailbox->pop3.ConnectPOP3();
 
   //std::memset(&input_id[0], 0, input_id.size());
   //std::memset(&input_password[0], 0, input_password.size());

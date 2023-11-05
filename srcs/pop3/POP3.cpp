@@ -10,14 +10,18 @@
 //POP3 constructor, opens a connection to the server and authenticates the user
 POP3::POP3(std::string const &server, int port, bool useTLS,
            std::string const &ID, std::string const &Password)
-    : socket(nullptr), useTLS(useTLS) {
-  open(server, port, useTLS);
-  authenticate(ID, Password);
+    : socket(nullptr), useTLS(useTLS), server(server), port(port), ID(ID),
+      Password(Password) {
 }
 
 //POP3 destructor, closes the connection to the server
 POP3::~POP3() { close(); }
 
+
+void POP3::ConnectPOP3(){
+  open(server, port, useTLS);
+  authenticate(ID, Password);
+}
 //Sends a command to the server followed by a CRLF
 void POP3::sendCommand(std::string const &command) {
   socket->write(command + "\r\n");

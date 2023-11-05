@@ -4,8 +4,13 @@
 
 #include "client/Client.hpp"
 
+void leak(){
+  system("leaks EmailClient");
+}
 
 int main() {
+  atexit(leak);
+
   Client client;
 
 

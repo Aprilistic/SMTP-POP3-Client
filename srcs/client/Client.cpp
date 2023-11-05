@@ -1,4 +1,5 @@
 #include "client/Client.hpp"
+#include <cstring>
 
 Client::Client() : dnsAddress(__DOMAIN_NAME), mailbox(nullptr) {}
 

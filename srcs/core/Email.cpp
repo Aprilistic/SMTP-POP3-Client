@@ -21,6 +21,7 @@ Email::Email(std::list<std::string> &rawEmail) {
   m_body = "";
   bool isBase64Content = false;
   for (const auto &line : rawEmail) {
+		std::cout << "line: " << line << std::endl;
     if (line.substr(0, 5) == "From:") {
       m_nickname = decodeMimeWord(line.substr(6));
       size_t start = line.find('<');

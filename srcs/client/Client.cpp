@@ -5,15 +5,16 @@ Client::Client() : dnsAddress(__DOMAIN_NAME), mailbox(nullptr) {}
 Client::~Client() {
   if (mailbox) {
     delete mailbox;
+    mailbox = nullptr;
   }
 }
 void Client::Login() {
   std::string input_id;
   std::string input_password;
-  std::string authplain;
 
   std::cout << "아이디를 입력하세요: ";
   std::cin >> input_id;
+  // clearerr(stdin);
   std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n'); // 버퍼를 비움
 
   std::cout << "비밀번호를 입력하세요: ";
@@ -30,13 +31,23 @@ void Client::Login() {
 
   std::cout << "\n";
 
-  authplain = base64_encode("\0" + input_id + "\0" + input_password);
+  char authplain[1024] = {0};
+  strcpy(authplain + 1, input_id.c_str());
+  strcpy(authplain + 1 + input_id.size() + 1, input_password.c_str());
+  
+  // std::string authplain;
+  // authplain = "\0" + input_id + "\0" + input_password;
+  // std::cout<< "auth plain: " << authplain <<std::endl;
+  std::string authplain_encoded = base64_encode(reinterpret_cast<const unsigned char*>(authplain), input_id.size() + input_password.size() + 2);
+  // std::string authplain_encoded = base64_encode(reinterpret_cast<const unsigned char*>(authplain.data()), authplain.size());
+  //std::cout << "auth plain encoded: " << authplain_encoded << std::endl;
 
   if (mailbox) {
     delete mailbox;
+    mailbox = nullptr;
   }
-  
-  mailbox = new MailBox(input_id, input_password, authplain);
+
+  mailbox = new MailBox(input_id, input_password, authplain_encoded);
 
   //std::memset(&input_id[0], 0, input_id.size());
   //std::memset(&input_password[0], 0, input_password.size());
@@ -44,12 +55,15 @@ void Client::Login() {
 
   input_id.clear();
   input_password.clear();
-  authplain.clear();
+  authplain_encoded.clear();
+  //std::fill(authplain, authplain + sizeof(authplain), 0);
 }
 
 void Client::Logout() {
 
-  delete mailbox;
+  if (mailbox) {
+    delete mailbox;
+  }
   mailbox = nullptr;
   // std::cout << "로그아웃 완료!";
 }
@@ -57,7 +71,7 @@ void Client::Logout() {
 Email Client::EmailInput() {
   std::string date, sendTo, recvFrom, title, body, line;
 
-  std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // 버퍼를 비움
+  std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n'); // 버퍼를 비움
   std::cout << "받는 사람의 이메일 주소를 입력하세요: ";
   // std::cin>>sendTo;
   std::getline(std::cin, sendTo);
@@ -71,7 +85,7 @@ Email Client::EmailInput() {
       break;
     }
   }
-
+  
   Email email;
   email.SetSendTo(sendTo);
   email.SetRecvFrom(mailbox->GetID());
@@ -80,7 +94,6 @@ Email Client::EmailInput() {
 
   return email;
 }
-
 
 void Client::ShowOptions() {
 
@@ -103,8 +116,14 @@ void Client::ShowOptions() {
 
   std::cout << "번호 입력 :";
   std::cin >> option;
+  while (std::cin.fail()) {
+    std::cin.clear(); // 오류 상태 초기화
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n'); // 오류 입력 제거
+    std::cout << "잘못된 입력입니다. 다시 시도해주세요.\n" << std::endl;
+    std::cout << "번호 입력 :";
+    std::cin >> option;
+  }
   // std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
   switch (option) {
   case 1:
     // 이메일 발송
@@ -126,6 +145,13 @@ void Client::ShowOptions() {
       int id;
       std::cout << "출력할 이메일 인덱스 번호 입력 : ";
       std::cin >> id;
+      while (std::cin.fail()) {
+        std::cin.clear(); // 오류 상태 초기화
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n'); // 오류 입력 제거
+        std::cout << "잘못된 입력입니다. 다시 시도해주세요.\n" << std::endl;
+        std::cout << "출력할 이메일 인덱스 번호 입력 : ";
+        std::cin >> id;
+      }
       mailbox->pop3.PrintMessage(id);
       break;
     }
@@ -136,6 +162,13 @@ void Client::ShowOptions() {
       std::cout << "전달할 이메일 id 입력 : ";
       std::string sendTo;
       std::cin >> id >> sendTo;
+      while (std::cin.fail()) {
+        std::cin.clear(); // 오류 상태 초기화
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n'); // 오류 입력 제거
+        std::cout << "잘못된 입력입니다. 다시 시도해주세요.\n" << std::endl;
+        std::cout << "전달할 이메일 id 입력 : ";
+        std::cin >> id >> sendTo;
+      }
       mailbox->ForwardMail(id, sendTo);
       break;
     }
@@ -146,7 +179,13 @@ void Client::ShowOptions() {
       std::string body, line;
       std::cout << "답장할 이메일 id 입력 : ";
       std::cin >> id;
-
+      while (std::cin.fail()) {
+        std::cin.clear(); // 오류 상태 초기화
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n'); // 오류 입력 제거
+        std::cout << "잘못된 입력입니다. 다시 시도해주세요.\n" << std::endl;
+        std::cout << "답장할 이메일 id 입력 : ";
+        std::cin >> id;
+      }
       std::cout << "본문을 입력하세요 (입력을 완료하려면 '.'을 입력하세요): ";
       while (std::getline(std::cin, line)) {
         body += line + "\r\n";
@@ -164,6 +203,13 @@ void Client::ShowOptions() {
       int id;
       std::cout << "삭제할 이메일 id 입력 : ";
       std::cin >> id;
+      while (std::cin.fail()) {
+        std::cin.clear(); // 오류 상태 초기화
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n'); // 오류 입력 제거
+        std::cout << "잘못된 입력입니다. 다시 시도해주세요.\n" << std::endl;
+        std::cout << "삭제할 이메일 id 입력 : ";
+        std::cin >> id;
+      }
       mailbox->pop3.DeleteMessage(id);
       break;
     }
@@ -178,7 +224,7 @@ void Client::ShowOptions() {
     exit(0);
     break;
   default:
-    std::cout << "잘못된 입력입니다. 다시 시도해주세요." << std::endl;
+    std::cout << "잘못된 입력입니다. 다시 시도해주세요.\n" << std::endl;
     break;
   }
 };

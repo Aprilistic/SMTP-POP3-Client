@@ -25,17 +25,16 @@
 
 // g++ SMTP.cpp -lssl -lcrypto
 
-SMTP::SMTP(std::string const &server, int port, std::string const &authPlain){
+SMTP::SMTP(std::string const &server, int port, std::string const &authplain)
+{
     dnsAddress = __DOMAIN_NAME;
     smtpServerAddress = server;
     smtpPort = port;
-    authID = authPlain;    
-    std::cout << authID << "\n";
+    authID = authplain;
 }// 생성자
 
 SMTP::~SMTP(){
   CloseSMTP();
-
 }
 
 void SMTP::SMTPCycle(Email email) {
@@ -56,7 +55,7 @@ void SMTP::ConnectSMTP() {
   hostent *host;
   // 스트림 방식(TCP)의 소켓을 생성
   if ((client_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-    throw std::runtime_error("'Socket Failed'");
+    throw std::runtime_error("Socket Failed");
   }
   // AF_INET은 인터넷 프로토콜을 의미
   // client_fd는 왜 int형인가?	-client_fd는 소켓 그 자체를 담는 변수가 아닌
@@ -69,7 +68,7 @@ void SMTP::ConnectSMTP() {
   // 해당 호스트의 IP 주소 및 기타 네트워크 관련 정보를 반환
   host = gethostbyname(smtpServerAddress.c_str());
   if (host == NULL) {
-    throw std::runtime_error("'Host Not Found'");
+    throw std::runtime_error("Host Not Found");
   }
 
   memcpy(&(serv_addr.sin_addr), host->h_addr, host->h_length); // IP 주소 복사
@@ -80,7 +79,7 @@ void SMTP::ConnectSMTP() {
   // 클라이언트 소켓 - 해당 SMTP 서버의 주소 및 포트와 연결 시도
   if ((status = connect(client_fd, (struct sockaddr *)&serv_addr,
                         sizeof(serv_addr))) < 0) {
-    throw std::runtime_error("'Connection Failed'");
+    throw std::runtime_error("Connection Failed");
   }
 
   // 서버로부터 응답 수신
@@ -113,7 +112,7 @@ void SMTP::StartTlsSMTP() {
 
   if (strstr(recvBuffer, "220") == NULL) {
     close(client_fd);
-    throw std::runtime_error("'STARTTLS not supported'");
+    throw std::runtime_error("STARTTLS not supported");
   }
 
   SSL_library_init(); // OpenSSL 라이브러리 초기화
@@ -126,18 +125,18 @@ void SMTP::StartTlsSMTP() {
   // SSL 컨텍스트 생성
   ctx = SSL_CTX_new(SSLv23_client_method());
   if (ctx == NULL) {
-    std::cerr << "'SSL_CTX_new error'" << std::endl;
+    std::cerr << "SSL_CTX_new error" << std::endl;
   }
 
   // SSL 소켓 생성
   ssl = SSL_new(ctx);
   if (ssl == NULL) {
-    std::cerr << "'SSL_new error'" << std::endl;
+    std::cerr << "SSL_new error" << std::endl;
   }
 
   // TLS 연결 설정
   if (SSL_set_fd(ssl, client_fd) != 1) {
-    std::cerr << "'SSL_set_fd error'" << std::endl;
+    std::cerr << "SSL_set_fd error" << std::endl;
   }
 
   // SSL 핸드셰이크 수행
@@ -145,7 +144,7 @@ void SMTP::StartTlsSMTP() {
     // SSL 핸드셰이크 실패 처리
     SSL_free(ssl);
     close(client_fd);
-    throw std::runtime_error("'SSL handshake failed'");
+    throw std::runtime_error("SSL handshake failed");
   }
 }
 
@@ -169,10 +168,9 @@ void SMTP::AuthLogin() {
   SSL_read(ssl, recvBuffer, sizeof(recvBuffer));
   if (strstr(recvBuffer, "334") == NULL) {
     close(client_fd);
-    throw std::runtime_error("'AuthPlain not supported'");
+    throw std::runtime_error("AuthPlain not supported");
   }
-
-  // 이메일 계정, 비밀번호를 base64 인코딩하여 전송
+  
   sprintf(sendBuffer, "%s\r\n", authID.c_str());
   SSL_write(ssl, sendBuffer, (int)strlen(sendBuffer));
 
@@ -181,7 +179,7 @@ void SMTP::AuthLogin() {
   SSL_read(ssl, recvBuffer, sizeof(recvBuffer));
   if (strstr(recvBuffer, "235") == NULL) {
     close(client_fd);
-    throw std::runtime_error("'Wrong ID or password'");
+    throw std::runtime_error("Wrong ID or password");
   }
   return;
 }
@@ -215,7 +213,7 @@ void SMTP::SendMail(Email email) {
   SSL_read(ssl, recvBuffer, sizeof(recvBuffer));
   if (strstr(recvBuffer, "250") == NULL) {
     close(client_fd);
-    throw std::runtime_error("'Wrong Mail Sender Address'");
+    throw std::runtime_error("Wrong Mail Sender Address");
   }
 
   // RCPT TO:<수신자 이메일>
@@ -227,7 +225,7 @@ void SMTP::SendMail(Email email) {
   SSL_read(ssl, recvBuffer, sizeof(recvBuffer));
   if (strstr(recvBuffer, "250") == NULL) {
     close(client_fd);
-    throw std::runtime_error("'Wrong Mail Receiver Address'");
+    throw std::runtime_error("Wrong Mail Receiver Address");
   }
 
   // DATA
@@ -249,7 +247,7 @@ void SMTP::SendMail(Email email) {
   SSL_read(ssl, recvBuffer, sizeof(recvBuffer));
   if (strstr(recvBuffer, "250") == NULL) {
     close(client_fd);
-    throw std::runtime_error("'Email delivery failure'");
+    throw std::runtime_error("Email delivery failure");
   }
 
   // quit

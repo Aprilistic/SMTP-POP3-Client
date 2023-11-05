@@ -3,10 +3,11 @@
 #include "client/Client.hpp"
 #include "client/MailBox.hpp"
 
-MailBox::MailBox(std::string const &ID, std::string const &password,std::string const &authplain)
-    : m_ID(ID)
-    , smtp(__SMTP_SERVER_ADDRESS,__SMTP_DEFAULT_PORT,true,ID,authplain)
-    , pop3(__POP3_SERVER_ADDRESS, __POP3_DEFAULT_PORT, true, ID, password) {}
+MailBox::MailBox(std::string const &ID, std::string const &password,
+                 std::string const &authplain)
+    : m_ID(ID),
+       smtp(__SMTP_SERVER_ADDRESS, __SMTP_DEFAULT_PORT, authplain),
+      pop3(__POP3_SERVER_ADDRESS, __POP3_DEFAULT_PORT, true, ID, password) {}
 
 void MailBox::SendMail(Email email) { smtp.SMTPCycle(email); }
 
@@ -48,10 +49,6 @@ void MailBox::ReplyMail(int id, std::string body) {
   smtp.SMTPCycle(replyEmail);
 }
 
-void MailBox::ListMailbox() {
-  pop3.PrintMessageList();
-}
+void MailBox::ListMailbox() { pop3.PrintMessageList(); }
 
-void MailBox::ReadMail(int id){
-  pop3.PrintMessage(id);
-}
+void MailBox::ReadMail(int id) { pop3.PrintMessage(id); }
